@@ -17,7 +17,7 @@ import org.wstorm.rcache.jedis.Publisher;
 import org.wstorm.rcache.jedis.Subscriber;
 import org.wstorm.rcache.utils.CacheUtils;
 import org.wstorm.rcache.utils.CollectionsUtils;
-import org.wstorm.rcache.utils.KryoPoolSerializer;
+import org.wstorm.rcache.serializer.KryoPoolSerializer;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.JedisPool;
 
