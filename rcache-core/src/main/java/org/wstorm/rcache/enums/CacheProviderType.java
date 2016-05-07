@@ -8,5 +8,5 @@ package org.wstorm.rcache.enums;
  * @created 2016年05月06日
  */
 public enum CacheProviderType {
-    ehcache, memcached, none
+    ehcache, memcached, redis, none
 }
