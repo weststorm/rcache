@@ -16,7 +16,7 @@ public class Publisher extends JedisWrapper {
     }
 
     public void publish(final String channel, final byte[] message) {
-        execute((JedisAction<Void>) jedis -> {
+        execute(jedis -> {
             jedis.publish(serialKey(channel), message);
             return null;
         });

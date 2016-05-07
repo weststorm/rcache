@@ -1,7 +1,6 @@
 package org.wstorm.rcache.jedis;
 
 import redis.clients.jedis.BinaryJedisPubSub;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
 public class Subscriber extends JedisWrapper {
@@ -17,35 +16,25 @@ public class Subscriber extends JedisWrapper {
      * @param channels          频道数组
      */
     public void subscribeAndBlock(final BinaryJedisPubSub binaryJedisPubSub, final String... channels) {
-        if (channels.length == 0) {
-            return;
-        }
-        if (binaryJedisPubSub == null) {
-            return;
-        }
 
-        new JedisAction<Void>() {
+        if (channels.length == 0 || binaryJedisPubSub == null) return;
 
-            @Override
-            public Void execute(final Jedis jedis) {
-                try {
-                    byte[][] channelBytes = new byte[channels.length][];
+        execute(jedis -> {
+            try {
+                byte[][] channelBytes = new byte[channels.length][];
 
-                    for (int i = 0; i < channels.length; i++) {
-                        channelBytes[i] = serialKey(channels[i]);
-                        log.info("订阅缓存频道{}", channels[i]);
-                    }
-
-                    jedis.subscribe(binaryJedisPubSub, channelBytes);
-
-                } catch (Exception e) {
-                    log.warn("订阅缓存频道异常{}", e);
-                    throw e;
-                } finally {
-                    jedis.close();
+                for (int i = 0; i < channels.length; i++) {
+                    channelBytes[i] = serialKey(channels[i]);
+                    log.info("订阅缓存频道{}", channels[i]);
                 }
-                return null;
+
+                jedis.subscribe(binaryJedisPubSub, channelBytes);
+
+            } catch (Exception e) {
+                log.warn("订阅缓存频道异常{}", e);
+                throw e;
             }
-        };
+            return null;
+        });
     }
 }
