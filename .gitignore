@@ -4,3 +4,9 @@
 rcache-core/*.iml
 
 .idea/*
+
+target/*
+
+rcache-core/target
+
+rcache-utils/target
