@@ -21,11 +21,11 @@ public interface Cache {
      *
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
      * @param keys        cache keys
-     * @param initData    数据初始化器
+     * @param dataPicker  数据初始化器
      * @return Map with ID Key And T value
      * @throws CacheException 如果缓存无法提供服务异常
      */
-    public <ID, T> Map<ID, T> getAll(CacheConfig cacheConfig, List<ID> keys, DataPicker<ID, T> initData) throws CacheException;
+    <T> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) throws CacheException;
 
     /**
      * 缓存多个对象
@@ -34,7 +34,7 @@ public interface Cache {
      * @param objectMap   要缓存的对象Map
      * @throws CacheException 如果缓存数据为空或缓存无法提供服务异常
      */
-    public <ID, T> void putAll(CacheConfig cacheConfig, Map<ID, T> objectMap) throws CacheException;
+    <T> void putAll(CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException;
 
     /**
      * 从缓存中提取单个缓存对象
@@ -43,7 +43,7 @@ public interface Cache {
      * @param key         cache key
      * @return the cached object or null
      */
-    public <ID, T> T get(CacheConfig cacheConfig, ID key, DataPicker<ID, T> initData) throws CacheException;
+    <T> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException;
 
     /**
      * 增加缓存对象
@@ -52,7 +52,7 @@ public interface Cache {
      * @param key         cache key
      * @param value       cache value
      */
-    public <ID, T> void put(CacheConfig cacheConfig, ID key, T value) throws CacheException;
+    <T> void put(CacheConfig cacheConfig, String key, T value) throws CacheException;
 
     /**
      * 获取所有Key
@@ -60,7 +60,7 @@ public interface Cache {
      * @return 返回List
      * @throws CacheException 如果缓存无法提供服务异常
      */
-    public List<String> keys() throws CacheException;
+    List keys() throws CacheException;
 
     /**
      * 从缓存中移除指定对象
@@ -68,7 +68,7 @@ public interface Cache {
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
      * @param key         the cache keys to be evicted
      */
-    public <ID> void evict(CacheConfig cacheConfig, ID key) throws CacheException;
+    void evict(CacheConfig cacheConfig, String key) throws CacheException;
 
     /**
      * Batch remove cache objects
@@ -76,6 +76,6 @@ public interface Cache {
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
      * @param keys        the cache keys to be evicted
      */
-    public <ID> void evict(CacheConfig cacheConfig, List<ID> keys) throws CacheException;
+    void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException;
 
 }
