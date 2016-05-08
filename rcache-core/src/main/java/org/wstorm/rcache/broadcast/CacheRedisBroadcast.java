@@ -14,8 +14,7 @@ import org.wstorm.rcache.entity.CacheObject;
 import org.wstorm.rcache.entity.Command;
 import org.wstorm.rcache.enums.CacheRegion;
 import org.wstorm.rcache.exception.CacheException;
-import org.wstorm.rcache.jedis.Publisher;
-import org.wstorm.rcache.jedis.Subscriber;
+import org.wstorm.rcache.jedis.PubSuber;
 import org.wstorm.rcache.serializer.KryoPoolSerializer;
 import org.wstorm.rcache.utils.CacheUtils;
 import org.wstorm.rcache.utils.CollectionsUtils;
@@ -45,8 +44,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final String hostId;
     private CacheManager cacheManager;
-    private Publisher publisher;
-    private Subscriber subscriber;
+    private PubSuber pubSuber;
     private boolean retryWhenSubscribeFail = (true);
     /**
      * 发布/订阅的缓存频道
@@ -69,8 +67,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
 
         this.hostId = buf.toString();
 
-        publisher = new Publisher(cachePublishJedisPool);
-        subscriber = new Subscriber(cachePublishJedisPool);
+        pubSuber = new PubSuber(cachePublishJedisPool);
         // 开始订阅
         (new Thread(() -> {
             while (retryWhenSubscribeFail) {
@@ -78,7 +75,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
                 for (int i = 0; i < cacheRegions.size(); i++) {
                     channels[i] = cacheRegions.get(i).region;
                 }
-                subscriber.subscribeAndBlock(CacheRedisBroadcast.this, channels);
+                pubSuber.subscribeAndBlock(CacheRedisBroadcast.this, channels);
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException ignored) {
@@ -116,7 +113,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
         // 发送广播
         Command cmd = new Command(hostId, Command.OPT_DELETE_KEY, region, key);
         try {
-            publisher.publish(region, serializer.serialize(cmd));
+            pubSuber.publish(region, serializer.serialize(cmd));
         } catch (Exception e) {
             log.error("Unable to delete cache| region={}| key={}", region, key, e);
         }

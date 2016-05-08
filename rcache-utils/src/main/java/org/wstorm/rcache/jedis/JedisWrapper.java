@@ -7,6 +7,8 @@ import redis.clients.jedis.JedisPool;
 import redis.clients.util.SafeEncoder;
 
 /**
+ * jedis wrapper for jedis Action
+ *
  * @author sunyp
  * @version 1.0
  * @created 2016年05月07日
@@ -44,6 +46,21 @@ public class JedisWrapper {
         return SafeEncoder.encode(key);
     }
 
+    /**
+     * 触码成String
+     *
+     * @param bytes redis key byte[]
+     * @return String
+     */
+    protected String deserialKey(byte[] bytes) {
+        return SafeEncoder.encode(bytes);
+    }
+
+    /**
+     * jedis 执行动作回调接口
+     *
+     * @param <T> 返回类型
+     */
     public interface JedisAction<T> {
         T execute(Jedis jedis);
     }

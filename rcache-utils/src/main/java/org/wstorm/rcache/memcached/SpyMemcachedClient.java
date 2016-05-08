@@ -26,6 +26,10 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * Get方法, 转换结果类型并屏蔽异常, 仅返回Null.
+     *
+     * @param key key
+     * @param <T> value type
+     * @return cache object value
      */
     @SuppressWarnings("unchecked")
     public <T> T get(String key) {
@@ -51,6 +55,10 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * GetBulk方法, 转换结果类型并屏蔽异常.
+     *
+     * @param keys keys
+     * @param <T>  value type
+     * @return map<key value>
      */
     @SuppressWarnings("unchecked")
     public final <T> Map<String, T> getBulk(Collection<String> keys) {
@@ -64,6 +72,10 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * 异步Set方法, 不考虑执行结果.
+     *
+     * @param key         key
+     * @param expiredTime expiration time
+     * @param value       value
      */
     public final void set(String key, int expiredTime, Object value) {
         Preconditions.checkArgument(StringUtils.isNotBlank(key), "key不能为空");
@@ -76,6 +88,11 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * 安全的Set方法, 保证在updateTimeout秒内返回执行结果, 否则返回false并取消操作.
+     *
+     * @param key        key
+     * @param expiration expiration time
+     * @param value      value
+     * @return true for success
      */
     public boolean safeSet(String key, int expiration, Object value) {
         Future<Boolean> future = memcachedClient.set(key, expiration, value);
@@ -89,6 +106,8 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * 异步 Delete方法, 不考虑执行结果.
+     *
+     * @param key key
      */
     public void delete(String key) {
         if (key == null) {
@@ -99,6 +118,9 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * 安全的Delete方法, 保证在updateTimeout秒内返回执行结果, 否则返回false并取消操作.
+     *
+     * @param key key
+     * @return true for success
      */
     public boolean safeDelete(String key) {
         Future<Boolean> future = memcachedClient.delete(key);
@@ -112,44 +134,74 @@ public class SpyMemcachedClient implements ErrorHandler, DisposableBean {
 
     /**
      * Incr方法.
+     *
+     * @param key          key
+     * @param delta        delta
+     * @param defaultValue if not exists, the default value
+     * @return the key's value
      */
-    public long incr(String key, int by, long defaultValue) {
-        return memcachedClient.incr(key, by, defaultValue);
+    public long incr(String key, int delta, long defaultValue) {
+        return memcachedClient.incr(key, delta, defaultValue);
     }
 
     /**
      * Incr方法. 有超时方法
+     *
+     * @param key          key
+     * @param delta        delta
+     * @param defaultValue if not exists, the default value
+     * @param exp          expired time
+     * @return the key's value
      */
-    public long incr(String key, int by, long defaultValue, int exp) {
-        return memcachedClient.incr(key, by, defaultValue, exp);
+    public long incr(String key, int delta, long defaultValue, int exp) {
+        return memcachedClient.incr(key, delta, defaultValue, exp);
     }
 
     /**
      * Decr方法.
+     *
+     * @param key          key
+     * @param delta        delta
+     * @param defaultValue if not exists, the default value
+     * @return the key's value
      */
-    public long decr(String key, int by, long defaultValue) {
-        return memcachedClient.decr(key, by, defaultValue);
+    public long decr(String key, int delta, long defaultValue) {
+        return memcachedClient.decr(key, delta, defaultValue);
     }
 
     /**
      * Decr方法.. 有超时方法
+     *
+     * @param key          key
+     * @param delta        delta
+     * @param defaultValue if not exists, the default value
+     * @param exp          expired time
+     * @return the key's value
      */
-    public long decr(String key, int by, long defaultValue, int exp) {
-        return memcachedClient.decr(key, by, defaultValue, exp);
+    public long decr(String key, int delta, long defaultValue, int exp) {
+        return memcachedClient.decr(key, delta, defaultValue, exp);
     }
 
     /**
      * 异步Incr方法, 不支持默认值, 若key不存在返回-1.
+     *
+     * @param key   key
+     * @param delta delta
+     * @return the key's value
      */
-    public Future<Long> asyncIncr(String key, int by) {
-        return memcachedClient.asyncIncr(key, by);
+    public Future<Long> asyncIncr(String key, int delta) {
+        return memcachedClient.asyncIncr(key, delta);
     }
 
     /**
      * 异步Decr方法, 不支持默认值, 若key不存在返回-1.
+     *
+     * @param key   key
+     * @param delta delta
+     * @return the key's value
      */
-    public Future<Long> asyncDecr(String key, int by) {
-        return memcachedClient.asyncDecr(key, by);
+    public Future<Long> asyncDecr(String key, int delta) {
+        return memcachedClient.asyncDecr(key, delta);
     }
 
     public MemcachedClient getMemcachedClient() {
