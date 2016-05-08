@@ -16,7 +16,23 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <rcache.utils.version>1.0-SNAPSHOT</rcache.utils.version>
         <rcache.core.version>1.0-SNAPSHOT</rcache.core.version>
+        <guava.version>18.0</guava.version>
+        <slfapi.version>1.7.10</slfapi.version>
+        <jedis.version>2.7.2</jedis.version>
+        <commons.lang3.version>3.3.2</commons.lang3.version>
+        <kryo.version>3.0.3</kryo.version>
+        <commons.beanutils.version>1.9.2</commons.beanutils.version>
+        <ehcache.core.version>2.6.11</ehcache.core.version>
+        <spymemcached.version>2.11.7</spymemcached.version>
+
+        <spring.version>4.1.7.RELEASE</spring.version>
+        <spring.data.version>1.10.0.RELEASE</spring.data.version>
+        <spring.security.version>3.2.7.RELEASE</spring.security.version>
+        <spring.jpa.version>1.8.0.RELEASE</spring.jpa.version>
+        <spring.redis.version>1.5.1.RELEASE</spring.redis.version>
+        <spring.mongodb.version>1.7.0.RELEASE</spring.mongodb.version>
     </properties>
+
 
     <dependencyManagement>
         <dependencies>
@@ -34,42 +50,112 @@
             <dependency>
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
-                <version>18.0</version>
+                <version>${guava.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-api</artifactId>
-                <version>1.7.10</version>
+                <version>${slfapi.version}</version>
             </dependency>
             <dependency>
                 <groupId>redis.clients</groupId>
                 <artifactId>jedis</artifactId>
-                <version>2.7.2</version>
+                <version>${jedis.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
-                <version>3.3.2</version>
+                <version>${commons.lang3.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.esotericsoftware</groupId>
                 <artifactId>kryo</artifactId>
-                <version>3.0.3</version>
+                <version>${kryo.version}</version>
             </dependency>
             <dependency>
                 <groupId>commons-beanutils</groupId>
                 <artifactId>commons-beanutils</artifactId>
-                <version>1.9.2</version>
+                <version>${commons.beanutils.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.sf.ehcache</groupId>
                 <artifactId>ehcache-core</artifactId>
-                <version>2.6.11</version>
+                <version>${ehcache.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>net.spy</groupId>
                 <artifactId>spymemcached</artifactId>
-                <version>2.11.7</version>
+                <version>${spymemcached.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-web</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-webmvc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.security</groupId>
+                <artifactId>spring-security-web</artifactId>
+                <version>${spring.security.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jdbc</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-aop</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-context-support</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-commons</artifactId>
+                <version>${spring.data.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-jpa</artifactId>
+                <version>${spring.jpa.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-redis</artifactId>
+                <version>${spring.redis.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-mongodb</artifactId>
+                <version>${spring.mongodb.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.mysema.querydsl</groupId>
+                <artifactId>querydsl-mongodb</artifactId>
+                <version>3.6.3</version>
             </dependency>
 
 
