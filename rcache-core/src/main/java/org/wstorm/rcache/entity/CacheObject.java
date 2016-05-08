@@ -1,6 +1,8 @@
 package org.wstorm.rcache.entity;
 
 
+import org.wstorm.rcache.RObject;
+
 import java.io.Serializable;
 
 

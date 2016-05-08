@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wstorm.rcache.CacheManager;
+import org.wstorm.rcache.RObject;
 import org.wstorm.rcache.annotation.CacheConfig;
 import org.wstorm.rcache.cache.CacheExpiredListener;
 import org.wstorm.rcache.cache.DataPicker;
@@ -15,9 +16,9 @@ import org.wstorm.rcache.enums.CacheRegion;
 import org.wstorm.rcache.exception.CacheException;
 import org.wstorm.rcache.jedis.Publisher;
 import org.wstorm.rcache.jedis.Subscriber;
+import org.wstorm.rcache.serializer.KryoPoolSerializer;
 import org.wstorm.rcache.utils.CacheUtils;
 import org.wstorm.rcache.utils.CollectionsUtils;
-import org.wstorm.rcache.serializer.KryoPoolSerializer;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.JedisPool;
 
@@ -38,8 +39,8 @@ import java.util.stream.Stream;
  */
 public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpiredListener {
 
-    public final static byte LEVEL_1 = 1;
-    public final static byte LEVEL_2 = 2;
+    private final static byte LEVEL_1 = 1;
+    private final static byte LEVEL_2 = 2;
     private final KryoPoolSerializer serializer = new KryoPoolSerializer();
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final String hostId;
@@ -129,7 +130,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param dataPicker  缓存过期时间。
      * @return cacheObject include cacheObject T
      */
-    public <T> CacheObject<T> get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) {
+    public <T extends RObject<String>> CacheObject<T> get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) {
         CacheObject<T> obj = new CacheObject<>();
         obj.setRegion(cacheConfig.region().region);
         obj.setKey(key);
@@ -153,7 +154,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param key         cache key
      * @param value       cache object
      */
-    public <T> void set(CacheConfig cacheConfig, String key, T value) {
+    public <T extends RObject<String>> void set(CacheConfig cacheConfig, String key, T value) {
         if (cacheConfig.region().region != null && key != null) {
             if (value == null) evict(cacheConfig, cacheConfig.region().region, key);
             else {
@@ -173,7 +174,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
         }
     }
 
-    public final <T> void setAll(CacheConfig cacheConfig, Map<String, T> objects) {
+    public <T extends RObject<String>> void setAll(CacheConfig cacheConfig, Map<String, T> objects) {
         if (cacheConfig.region().region != null && objects != null) {
             _publishEvictCmd(cacheConfig.region().region, CacheUtils.genCacheKeys(cacheConfig, Lists.newArrayList(objects.keySet().iterator())));// 清除原有的一级缓存的内容
             cacheManager.setAll(LEVEL_2, cacheConfig, objects, this);
@@ -310,7 +311,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param <T>         cache object type
      * @return cacheObject include map<String,T>
      */
-    public <T> CacheObject<Map<String, T>> getList(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) {
+    public <T extends RObject<String>> CacheObject<Map<String, T>> getList(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) {
         CacheObject<Map<String, T>> obj = new CacheObject<>();
         obj.setKey(StringUtils.join(keys, ","));
         obj.setRegion(cacheConfig.region().region);

@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
+import org.wstorm.rcache.RObject;
 import org.wstorm.rcache.annotation.CacheConfig;
 import org.wstorm.rcache.cache.Cache;
 import org.wstorm.rcache.cache.CacheExpiredListener;
@@ -46,7 +47,7 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker)
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker)
             throws CacheException {
 
         if (CollectionsUtils.isEmpty(keys)) return new HashMap<>();
@@ -64,7 +65,7 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
         if (key == null) return null;
         try {
             if (cacheConfig != null) key = CacheUtils.genCacheKey(cacheConfig, key);
@@ -79,7 +80,7 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @Override
-    public <T> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
         try {
             if (cacheConfig != null) key = CacheUtils.genCacheKey(cacheConfig, key);
             Element element = new Element(key, value);
@@ -93,7 +94,7 @@ class EhCacheCache implements Cache, CacheEventListener {
 
     }
 
-    public <T> void putAll(final CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException {
+    public <T extends RObject<String>> void putAll(final CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException {
         List<Element> elements = Lists.newArrayListWithCapacity(objectMap.size());
 
         if (cacheConfig != null) elements.addAll(objectMap.entrySet().stream().map(entry -> {
@@ -143,6 +144,7 @@ class EhCacheCache implements Cache, CacheEventListener {
         }
     }
 
+    @SuppressWarnings({"all"})
     public Object clone() throws CloneNotSupportedException {
         throw new CloneNotSupportedException();
     }

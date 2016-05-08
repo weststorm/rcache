@@ -1,5 +1,6 @@
 package org.wstorm.rcache.cache.nulls;
 
+import org.wstorm.rcache.RObject;
 import org.wstorm.rcache.annotation.CacheConfig;
 import org.wstorm.rcache.cache.Cache;
 import org.wstorm.rcache.cache.DataPicker;
@@ -18,21 +19,21 @@ import java.util.Map;
 final class NullCache implements Cache {
 
     @Override
-    public <T> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) throws CacheException {
         return null;
     }
 
     @Override
-    public <T> void putAll(CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException {
+    public <T extends RObject<String>> void putAll(CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException {
     }
 
     @Override
-    public <T> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
         return null;
     }
 
     @Override
-    public <T> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
     }
 
     @Override

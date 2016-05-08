@@ -76,7 +76,7 @@ public class CacheManager {
      * @param <T>         缓存对象类型
      * @return Cache object
      */
-    public final <T> T get(int level, CacheConfig cacheConfig, String key, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
+    public final <T extends RObject<String>> T get(int level, CacheConfig cacheConfig, String key, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
         // System.out.println("GET1 => " + name+":"+key);
         if (cacheConfig.region().region != null && key != null) {
             Cache cache = _GetCache(level, cacheConfig.region().region, listener);
@@ -104,7 +104,7 @@ public class CacheManager {
      * @param <T>         缓存对象类型
      * @return 返回缓存Key, Value Map
      */
-    public final <T> Map<String, T> getAll(int level, CacheConfig cacheConfig, List<String> keys, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
+    public final <T extends RObject<String>> Map<String, T> getAll(int level, CacheConfig cacheConfig, List<String> keys, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
         // System.out.println("GET1 => " + name+":"+key);
         if (cacheConfig.region().region != null && keys != null) {
             Cache cache = _GetCache(level, cacheConfig.region().region, listener);
@@ -121,7 +121,7 @@ public class CacheManager {
         return null;
     }
 
-    public final <T> void setAll(int level, CacheConfig cacheConfig, Map<String, T> objects, CacheExpiredListener listener) {
+    public final <T extends RObject<String>> void setAll(int level, CacheConfig cacheConfig, Map<String, T> objects, CacheExpiredListener listener) {
         if (cacheConfig.region().region != null && CollectionsUtils.isNotEmpty(objects)) {
             Cache cache = _GetCache(level, cacheConfig.region().region, listener);
             if (cache != null)
@@ -136,7 +136,7 @@ public class CacheManager {
         }
     }
 
-    public final <T> void set(int level, CacheConfig cacheConfig, String key, T value, CacheExpiredListener listener) {
+    public final <T extends RObject<String>> void set(int level, CacheConfig cacheConfig, String key, T value, CacheExpiredListener listener) {
         if (cacheConfig.region().region != null && key != null && value != null) {
             Cache cache = _GetCache(level, cacheConfig.region().region, listener);
             if (cache != null)
