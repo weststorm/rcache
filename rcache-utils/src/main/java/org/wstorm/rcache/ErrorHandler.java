@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
  * @version 1.0
  * @created 2016年05月08日
  */
-public interface ErrorHandle {
+public interface ErrorHandler {
 
-    Logger log = LoggerFactory.getLogger(ErrorHandle.class);
+    Logger log = LoggerFactory.getLogger(ErrorHandler.class);
 
     default void handleException(Exception e, String key) {
-        log.warn("ErrorHandle receive an exception with key={} | exception={}", key, e);
+        log.warn("ErrorHandler receive an exception with key={} | exception={}", key, e);
     }
 }
