@@ -24,7 +24,7 @@ public class SpyMemcachedClientTest {
     private SpyMemcachedClient spyMemcachedClient;
     private String key = "keyChain";
     private int shutdownTimeout = 10000;
-    private int updateTimeout = 10000;
+    private int expired = 2;
 
     @Before
     public void setUp() throws Exception {
@@ -35,7 +35,7 @@ public class SpyMemcachedClientTest {
 
         shutdownTimeout = (Integer.valueOf(bundle.getString("shutdownTimeout")));
 
-        updateTimeout = (Integer.valueOf(bundle.getString("updateTimeout")));
+        int updateTimeout = (Integer.valueOf(bundle.getString("updateTimeout")));
 
         spyMemcachedClient = new SpyMemcachedClient();
         InetSocketAddress inetSocketAddress = new InetSocketAddress(
@@ -61,14 +61,14 @@ public class SpyMemcachedClientTest {
         spyMemcachedClient.destroy();
         assertThat(spyMemcachedClient
                 .getMemcachedClient()
-                .shutdown(shutdownTimeout, TimeUnit.MILLISECONDS));
+                .shutdown(shutdownTimeout, TimeUnit.MILLISECONDS)).isFalse();
     }
 
     @Test
     public void getBulk() throws Exception {
         String key1 = "getBulk1", key2 = "getBulk2";
-        spyMemcachedClient.set(key1, 10, key1);
-        spyMemcachedClient.set(key2, 10, key2);
+        spyMemcachedClient.set(key1, expired, key1);
+        spyMemcachedClient.set(key2, expired, key2);
         Map<String, Object> bulk = spyMemcachedClient.getBulk(Arrays.asList(key1, key2));
         assertThat(bulk).isNotNull();
         assertThat(bulk.get(key1)).isEqualTo(key1);
@@ -78,14 +78,14 @@ public class SpyMemcachedClientTest {
     @Test
     public void set() throws Exception {
         String value = "set";
-        spyMemcachedClient.set(key, 2, value);
+        spyMemcachedClient.set(key, expired, value);
         assertThat((String) spyMemcachedClient.get(key)).isEqualTo(value);
     }
 
     @Test
     public void safeSet() throws Exception {
         String value = "safeSet";
-        boolean abc = spyMemcachedClient.safeSet(key, 2, value);
+        boolean abc = spyMemcachedClient.safeSet(key, expired, value);
         assertThat(abc).isTrue();
         String actual = spyMemcachedClient.get(key);
         assertThat(actual).isEqualTo(value);
@@ -94,7 +94,7 @@ public class SpyMemcachedClientTest {
     @Test
     public void delete() throws Exception {
         String value = "delete";
-        spyMemcachedClient.set(key, 2, value);
+        spyMemcachedClient.set(key, expired, value);
         spyMemcachedClient.delete(key);
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
@@ -103,7 +103,7 @@ public class SpyMemcachedClientTest {
     @Test
     public void safeDelete() throws Exception {
         String value = "safeDelete";
-        spyMemcachedClient.set(key, 2, value);
+        spyMemcachedClient.set(key, expired, value);
         spyMemcachedClient.safeDelete(key);
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
@@ -118,13 +118,13 @@ public class SpyMemcachedClientTest {
         long add = spyMemcachedClient.incr(key, 1, defaultValue);
         assertThat(add).isEqualTo(init + 1);
 
-        init = spyMemcachedClient.incr(key, 1, defaultValue, 1);
+        init = spyMemcachedClient.incr(key, 1, defaultValue, expired);
         assertThat(init).isEqualTo(defaultValue);
 
-        Thread.sleep(1001L);
-        add = spyMemcachedClient.incr(key, 1, defaultValue, 1);
+        Thread.sleep(expired + 1);
+        add = spyMemcachedClient.incr(key, 1, defaultValue, expired);
         assertThat(add).isEqualTo(init);
-        Thread.sleep(1001L);
+        Thread.sleep(expired + 1);
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
     }
@@ -140,13 +140,13 @@ public class SpyMemcachedClientTest {
         assertThat(add).isEqualTo(init - 1);
 
 
-        init = spyMemcachedClient.decr(key, 1, defaultValue, 1);
+        init = spyMemcachedClient.decr(key, 1, defaultValue, expired);
         assertThat(init).isEqualTo(defaultValue);
-        Thread.sleep(1001L);
+        Thread.sleep(expired + 1);
 
-        add = spyMemcachedClient.decr(key, 1, defaultValue, 1);
+        add = spyMemcachedClient.decr(key, 1, defaultValue, expired);
         assertThat(add).isEqualTo(init);
-        Thread.sleep(1001L);
+        Thread.sleep(expired + 1);
 
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
