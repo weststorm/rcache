@@ -53,11 +53,6 @@ public class SpyMemcachedClientTest {
     @After
     public void tearDown() throws Exception {
         spyMemcachedClient.delete(key);
-    }
-
-
-    @Test
-    public void destroy() throws Exception {
         spyMemcachedClient.destroy();
         assertThat(spyMemcachedClient
                 .getMemcachedClient()
@@ -118,13 +113,15 @@ public class SpyMemcachedClientTest {
         long add = spyMemcachedClient.incr(key, 1, defaultValue);
         assertThat(add).isEqualTo(init + 1);
 
+        spyMemcachedClient.safeDelete(key);
+
         init = spyMemcachedClient.incr(key, 1, defaultValue, expired);
         assertThat(init).isEqualTo(defaultValue);
 
-        Thread.sleep(expired + 1);
+        Thread.sleep(expired * 1000);
         add = spyMemcachedClient.incr(key, 1, defaultValue, expired);
         assertThat(add).isEqualTo(init);
-        Thread.sleep(expired + 1);
+        Thread.sleep(expired * 1000);
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
     }
@@ -139,14 +136,14 @@ public class SpyMemcachedClientTest {
         long add = spyMemcachedClient.decr(key, 1, defaultValue);
         assertThat(add).isEqualTo(init - 1);
 
-
+        spyMemcachedClient.delete(key);
         init = spyMemcachedClient.decr(key, 1, defaultValue, expired);
         assertThat(init).isEqualTo(defaultValue);
-        Thread.sleep(expired + 1);
+        Thread.sleep(expired * 1000);
 
         add = spyMemcachedClient.decr(key, 1, defaultValue, expired);
         assertThat(add).isEqualTo(init);
-        Thread.sleep(expired + 1);
+        Thread.sleep(expired * 1000);
 
         Object o = spyMemcachedClient.get(key);
         assertThat(o).isNull();
@@ -157,10 +154,13 @@ public class SpyMemcachedClientTest {
 
         Future<Long> longFuture = spyMemcachedClient.asyncIncr(key, 1);
         Long aLong = longFuture.get();
-        assertThat(aLong).isEqualTo(1);
+        assertThat(aLong).isEqualTo(-1);
+        spyMemcachedClient.incr(key, 1, 1);
         longFuture = spyMemcachedClient.asyncIncr(key, 1);
         aLong = longFuture.get();
         assertThat(aLong).isEqualTo(2);
+
+
     }
 
     @Test
@@ -168,10 +168,11 @@ public class SpyMemcachedClientTest {
 
         Future<Long> longFuture = spyMemcachedClient.asyncDecr(key, 1);
         Long aLong = longFuture.get();
-        assertThat(aLong).isEqualTo(1);
-        longFuture = spyMemcachedClient.asyncIncr(key, 1);
+        assertThat(aLong).isEqualTo(-1);
+        spyMemcachedClient.incr(key, 1, 1);
+        longFuture = spyMemcachedClient.asyncDecr(key, 1);
         aLong = longFuture.get();
-        assertThat(aLong).isEqualTo(2);
+        assertThat(aLong).isEqualTo(0);
     }
 
 }
