@@ -12,7 +12,6 @@ import org.wstorm.rcache.cache.CacheExpiredListener;
 import org.wstorm.rcache.cache.DataPicker;
 import org.wstorm.rcache.entity.CacheObject;
 import org.wstorm.rcache.entity.Command;
-import org.wstorm.rcache.enums.CacheRegion;
 import org.wstorm.rcache.exception.CacheException;
 import org.wstorm.rcache.jedis.PubSuber;
 import org.wstorm.rcache.serializer.KryoPoolSerializer;
@@ -49,7 +48,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     /**
      * 发布/订阅的缓存频道
      */
-    private List<CacheRegion> cacheRegions;
+    private List<String> cacheRegions;
 
     public CacheRedisBroadcast(JedisPool cachePublishJedisPool, SubscribeCacheRegionConfig subCacheRegionConfig, CacheManager cacheManager) {
         Preconditions.checkNotNull(cacheManager, "cacheManager can not be null!");
@@ -73,7 +72,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
             while (retryWhenSubscribeFail) {
                 String[] channels = new String[cacheRegions.size()];
                 for (int i = 0; i < cacheRegions.size(); i++) {
-                    channels[i] = cacheRegions.get(i).region;
+                    channels[i] = cacheRegions.get(i);
                 }
                 pubSuber.subscribeAndBlock(CacheRedisBroadcast.this, channels);
                 try {
@@ -129,9 +128,9 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      */
     public <T extends RObject<String>> CacheObject<T> get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) {
         CacheObject<T> obj = new CacheObject<>();
-        obj.setRegion(cacheConfig.region().region);
+        obj.setRegion(cacheConfig.region());
         obj.setKey(key);
-        if (cacheConfig.region().region != null && key != null) {
+        if (key != null) {
             obj.setValue(cacheManager.get(LEVEL_1, cacheConfig, key, this, dataPicker));
             if (obj.getValue() == null) {
                 obj.setValue(cacheManager.get(LEVEL_2, cacheConfig, key, this, dataPicker));
@@ -152,28 +151,28 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param value       cache object
      */
     public <T extends RObject<String>> void set(CacheConfig cacheConfig, String key, T value) {
-        if (cacheConfig.region().region != null && key != null) {
-            if (value == null) evict(cacheConfig, cacheConfig.region().region, key);
+        if (key != null) {
+            if (value == null) evict(cacheConfig, cacheConfig.region(), key);
             else {
                 // 分几种情况
                 // 1. L1 和 L2 都没有
                 // 2. L1 有 L2 没有（这种情况不存在，除非是写 L2 的时候失败
                 // 3. L1 没有，L2 有
                 // 4. L1 和 L2 都有
-                _publishEvictCmd(cacheConfig.region().region, CacheUtils.genCacheKey(cacheConfig, key));// 清除原有的一级缓存的内容
+                _publishEvictCmd(cacheConfig.region(), CacheUtils.genCacheKey(cacheConfig, key));// 清除原有的一级缓存的内容
                 cacheManager.set(LEVEL_1, cacheConfig, key, value, this);
                 cacheManager.set(LEVEL_2, cacheConfig, key, value, this);
             }
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("write data to cache region={}| key={}| value={}", cacheConfig.region().region, key, value);
+            log.debug("write data to cache region={}| key={}| value={}", cacheConfig.region(), key, value);
         }
     }
 
     public <T extends RObject<String>> void setAll(CacheConfig cacheConfig, Map<String, T> objects) {
-        if (cacheConfig.region().region != null && objects != null) {
-            _publishEvictCmd(cacheConfig.region().region, CacheUtils.genCacheKeys(cacheConfig, Lists.newArrayList(objects.keySet().iterator())));// 清除原有的一级缓存的内容
+        if (objects != null) {
+            _publishEvictCmd(cacheConfig.region(), CacheUtils.genCacheKeys(cacheConfig, Lists.newArrayList(objects.keySet().iterator())));// 清除原有的一级缓存的内容
             cacheManager.setAll(LEVEL_2, cacheConfig, objects, this);
             cacheManager.setAll(LEVEL_1, cacheConfig, objects, this);
         }
@@ -186,7 +185,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param key         主Key
      */
     public void evict(CacheConfig cacheConfig, String key) {
-        evict(cacheConfig, cacheConfig.region().region, key);
+        evict(cacheConfig, cacheConfig.region(), key);
     }
 
     /**
@@ -208,7 +207,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * @param keys        cache keys
      */
     public void batchEvict(CacheConfig cacheConfig, List<String> keys) {
-        batchEvict(cacheConfig, cacheConfig.region().region, keys);
+        batchEvict(cacheConfig, cacheConfig.region(), keys);
     }
 
     /**
@@ -311,8 +310,8 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     public <T extends RObject<String>> CacheObject<Map<String, T>> getList(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) {
         CacheObject<Map<String, T>> obj = new CacheObject<>();
         obj.setKey(StringUtils.join(keys, ","));
-        obj.setRegion(cacheConfig.region().region);
-        if (cacheConfig.region().region != null && keys != null && !keys.isEmpty()) {
+        obj.setRegion(cacheConfig.region());
+        if (keys != null && !keys.isEmpty()) {
             Map<String, T> bulk = cacheManager.getAll(LEVEL_1, cacheConfig, keys, this, dataPicker);
             if (CollectionsUtils.isEmpty(bulk) || bulk.size() < keys.size()) {
                 bulk = cacheManager.getAll(LEVEL_2, cacheConfig, keys, this, dataPicker);

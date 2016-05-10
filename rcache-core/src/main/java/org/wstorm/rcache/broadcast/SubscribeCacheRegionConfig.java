@@ -1,8 +1,6 @@
 package org.wstorm.rcache.broadcast;
 
 
-import org.wstorm.rcache.enums.CacheRegion;
-
 import java.util.List;
 
 /**
@@ -17,6 +15,6 @@ public interface SubscribeCacheRegionConfig {
     /**
      * @return 获取缓存区域配置
      */
-    List<CacheRegion> getSubscribeCacheRegions();
+    List<String> getSubscribeCacheRegions();
 
 }

@@ -1,8 +1,6 @@
 package org.wstorm.rcache.annotation;
 
 
-import org.wstorm.rcache.enums.CacheRegion;
-
 import java.lang.annotation.*;
 
 /**
@@ -31,5 +29,5 @@ public @interface CacheConfig {
     /**
      * @return 缓存所属区域
      */
-    CacheRegion region();
+    String region();
 }

@@ -4,7 +4,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
 import org.wstorm.rcache.annotation.CacheConfig;
-import org.wstorm.rcache.enums.CacheRegion;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -21,7 +20,7 @@ public class CacheUtils {
     /**
      * 默认注解
      */
-    private static CacheConfig defaultCacheAnno = new CacheConfig() {
+    final static CacheConfig defaultCacheAnno = new CacheConfig() {
 
         @Override
         public Class<? extends Annotation> annotationType() {
@@ -29,8 +28,8 @@ public class CacheUtils {
         }
 
         @Override
-        public CacheRegion region() {
-            return CacheRegion.unknown;
+        public String region() {
+            return "unknown";
         }
 
         @Override
@@ -66,7 +65,7 @@ public class CacheUtils {
     public static <T> String getCacheRegion(final Class<T> cacheObjectClass) {
         CacheConfig sndCache = getCacheAnnotation(cacheObjectClass);
         if (sndCache != null) {
-            return sndCache.region().region;
+            return sndCache.region();
         }
         return null;// 如果没有取外层
     }
@@ -111,12 +110,12 @@ public class CacheUtils {
         if (cacheConfig == null) {
             return keyStr;
         }
-        if (StringUtils.isNotBlank(cacheConfig.region().region)) {
-            if (keyStr.startsWith(cacheConfig.region().region)) {
+        if (StringUtils.isNotBlank(cacheConfig.region())) {
+            if (keyStr.startsWith(cacheConfig.region())) {
                 return keyStr;
             } else {
                 if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
-                    return concat(cacheConfig.region().region, cacheConfig.keyPrefix(), keyStr);
+                    return concat(cacheConfig.region(), cacheConfig.keyPrefix(), keyStr);
                 } else {
                     return keyStr;
                 }
@@ -148,7 +147,7 @@ public class CacheUtils {
             }
             return fixKeys;
         }
-        if (StringUtils.isBlank(cacheConfig.region().region)) {
+        if (StringUtils.isBlank(cacheConfig.region())) {
             if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
                 for (ID key : keys) {
                     if (key.toString().startsWith(cacheConfig.keyPrefix())) {
@@ -163,18 +162,18 @@ public class CacheUtils {
         } else {
             if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
                 for (ID key : keys) {
-                    if (key.toString().startsWith(cacheConfig.region().region)) {
+                    if (key.toString().startsWith(cacheConfig.region())) {
                         fixKeys.add(key.toString());
                     } else {
-                        fixKeys.add(concat(cacheConfig.region().region, cacheConfig.keyPrefix(), key.toString()));
+                        fixKeys.add(concat(cacheConfig.region(), cacheConfig.keyPrefix(), key.toString()));
                     }
                 }
             } else {
                 for (ID key : keys) {
-                    if (key.toString().startsWith(cacheConfig.region().region)) {
+                    if (key.toString().startsWith(cacheConfig.region())) {
                         fixKeys.add(key.toString());
                     } else {
-                        fixKeys.add(concat(cacheConfig.region().region, key.toString()));
+                        fixKeys.add(concat(cacheConfig.region(), key.toString()));
                     }
                 }
             }
@@ -206,13 +205,11 @@ public class CacheUtils {
             return cacheKey;
         }
         String id = cacheKey;
-        if (null != cacheConfig.region().region) {
-            if (id.startsWith(cacheConfig.region().region)) {
-                id = id.substring(cacheConfig.region().region.length() + 1);
-            }
-            if (id.startsWith(cacheConfig.keyPrefix())) {
-                id = id.substring(cacheConfig.keyPrefix().length() + 1);
-            }
+        if (id.startsWith(cacheConfig.region())) {
+            id = id.substring(cacheConfig.region().length() + 1);
+        }
+        if (id.startsWith(cacheConfig.keyPrefix())) {
+            id = id.substring(cacheConfig.keyPrefix().length() + 1);
         }
         return id;
     }

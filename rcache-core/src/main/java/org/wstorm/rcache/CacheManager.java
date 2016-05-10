@@ -45,7 +45,7 @@ public class CacheManager {
             log.info("Using L1 CacheProvider : " + l1_provider);
 
         } catch (Exception e) {
-            throw new CacheException("Unabled to initialize cache providers", e);
+            throw new CacheException("Unable to initialize cache providers", e);
         }
     }
 
@@ -78,8 +78,8 @@ public class CacheManager {
      */
     public final <T extends RObject<String>> T get(int level, CacheConfig cacheConfig, String key, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
         // System.out.println("GET1 => " + name+":"+key);
-        if (cacheConfig.region().region != null && key != null) {
-            Cache cache = _GetCache(level, cacheConfig.region().region, listener);
+        if (key != null) {
+            Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
                     return cache.get(cacheConfig, key, dataPicker);
@@ -106,8 +106,8 @@ public class CacheManager {
      */
     public final <T extends RObject<String>> Map<String, T> getAll(int level, CacheConfig cacheConfig, List<String> keys, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
         // System.out.println("GET1 => " + name+":"+key);
-        if (cacheConfig.region().region != null && keys != null) {
-            Cache cache = _GetCache(level, cacheConfig.region().region, listener);
+        if (keys != null) {
+            Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
                     return cache.getAll(cacheConfig, keys, dataPicker);
@@ -122,8 +122,8 @@ public class CacheManager {
     }
 
     public final <T extends RObject<String>> void setAll(int level, CacheConfig cacheConfig, Map<String, T> objects, CacheExpiredListener listener) {
-        if (cacheConfig.region().region != null && CollectionsUtils.isNotEmpty(objects)) {
-            Cache cache = _GetCache(level, cacheConfig.region().region, listener);
+        if (CollectionsUtils.isNotEmpty(objects)) {
+            Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
                     cache.putAll(cacheConfig, objects);
@@ -137,8 +137,8 @@ public class CacheManager {
     }
 
     public final <T extends RObject<String>> void set(int level, CacheConfig cacheConfig, String key, T value, CacheExpiredListener listener) {
-        if (cacheConfig.region().region != null && key != null && value != null) {
-            Cache cache = _GetCache(level, cacheConfig.region().region, listener);
+        if (key != null && value != null) {
+            Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
                     cache.put(cacheConfig, key, value);
@@ -160,8 +160,8 @@ public class CacheManager {
      */
     public final void evict(int level, CacheConfig cacheConfig, String name, String key, CacheExpiredListener listener) {
         // batchEvict(level, name, java.util.Arrays.asList(key));
-        if (name == null && cacheConfig != null && cacheConfig.region().region != null) {
-            name = cacheConfig.region().region;
+        if (name == null && cacheConfig != null) {
+            name = cacheConfig.region();
         }
         if (name != null && key != null) {
             Cache cache = _GetCache(level, name, listener);
@@ -187,8 +187,8 @@ public class CacheManager {
      * @param listener    过期监听器
      */
     public final void batchEvict(int level, CacheConfig cacheConfig, String name, List<String> keys, CacheExpiredListener listener) {
-        if (cacheConfig != null && cacheConfig.region().region != null) {
-            name = cacheConfig.region().region;
+        if (cacheConfig != null) {
+            name = cacheConfig.region();
         }
         if (name != null && keys != null && keys.size() > 0) {
             Cache cache = _GetCache(level, name, listener);
