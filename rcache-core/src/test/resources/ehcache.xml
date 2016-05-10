@@ -1,0 +1,23 @@
+<ehcache updateCheck="false" dynamicConfig="false">
+
+	<diskStore path="java.io.tmpdir/ehcache/cache" />
+
+	<cacheManagerEventListenerFactory
+		class="" properties="" />
+
+	<!-- 以下将时间调短方便测试 -->
+
+	<defaultCache maxElementsInMemory="100" eternal="false"
+		timeToIdleSeconds="0" timeToLiveSeconds="60" overflowToDisk="false">
+	</defaultCache>
+
+	<cache name="udserv:app" maxElementsInMemory="2" eternal="false"
+		timeToIdleSeconds="0" timeToLiveSeconds="5" overflowToDisk="false"
+		diskPersistent="false">
+	</cache>
+	<cache name="udserv:usr" maxElementsInMemory="1" eternal="false"
+		timeToIdleSeconds="0" timeToLiveSeconds="2" overflowToDisk="false"
+		diskPersistent="false">
+	</cache>
+
+</ehcache>
