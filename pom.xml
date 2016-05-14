@@ -25,6 +25,7 @@
         <ehcache.core.version>2.6.11</ehcache.core.version>
         <spymemcached.version>2.11.7</spymemcached.version>
 
+        <version.maven-jar-plugin>2.3.2</version.maven-jar-plugin>
         <spring.version>4.1.7.RELEASE</spring.version>
         <spring.data.version>1.10.0.RELEASE</spring.data.version>
         <spring.security.version>3.2.7.RELEASE</spring.security.version>
@@ -185,6 +186,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
+                <version>${version.maven-jar-plugin}</version>
                 <executions>
                     <execution>
                         <goals>

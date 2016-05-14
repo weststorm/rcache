@@ -46,7 +46,6 @@ class EhCacheCache implements Cache, CacheEventListener {
         return this.cache.getKeys();
     }
 
-    @SuppressWarnings("unchecked")
     public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker)
             throws CacheException {
 
@@ -54,28 +53,33 @@ class EhCacheCache implements Cache, CacheEventListener {
 
         try {
             return ids.stream().collect(Collectors.toMap(String::toString,
-                    key -> {
-                        Element element = cache.get(CacheUtils.genCacheKey(cacheConfig, key));
-                        if (element != null) return (T) element.getObjectValue();
-                        else return null;
-                    }));
+                    id -> getBackOff(cacheConfig, CacheUtils.genCacheKey(cacheConfig, id), dataPicker)));
         } catch (Exception e) {
-            throw new CacheException(e);
+            throw new CacheException("getAll", e);
+        }
+    }
+
+
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
+        if (id == null) return null;
+        try {
+            return getBackOff(cacheConfig, CacheUtils.genCacheKey(cacheConfig, id), dataPicker);
+        } catch (net.sf.ehcache.CacheException e) {
+            throw new CacheException("get", e);
         }
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
-        if (id == null) return null;
-        try {
-            if (cacheConfig != null) id = CacheUtils.genCacheKey(cacheConfig, id);
+    private <T extends RObject<String>> T getBackOff(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) {
+        Element element = cache.get(id);
 
-            Element element = cache.get(id);
+        if (element != null) return (T) element.getObjectValue();
+        else {
+            T t;
+            if ((t = dataPicker.pickup(id)) != null || (t = dataPicker.makeEmptyData()) != null)
+                put(cacheConfig, id, t);
 
-            return element != null ? (T) element.getObjectValue() : null;
-
-        } catch (net.sf.ehcache.CacheException e) {
-            throw new CacheException(e);
+            return t != null ? (!t.isBlank() ? t : null) : null;
         }
     }
 
@@ -89,7 +93,7 @@ class EhCacheCache implements Cache, CacheEventListener {
             }
             cache.put(element);
         } catch (Exception e) {
-            throw new CacheException(e);
+            throw new CacheException("put", e);
         }
 
     }
@@ -97,19 +101,25 @@ class EhCacheCache implements Cache, CacheEventListener {
     public <T extends RObject<String>> void putAll(final CacheConfig cacheConfig, Map<String, T> objectMap) throws CacheException {
         List<Element> elements = Lists.newArrayListWithCapacity(objectMap.size());
 
-        if (cacheConfig != null) elements.addAll(objectMap.entrySet().stream().map(entry -> {
-            Element element = new Element(entry.getKey(), entry.getValue());
-            if (cacheConfig.expiredTime() > 0) {
-                element.setTimeToLive(cacheConfig.expiredTime());
-            }
-            return element;
-        }).collect(Collectors.toList()));
+        if (cacheConfig != null)
+            elements.addAll(objectMap.entrySet().stream().map(entry -> {
+                Element element = new Element(entry.getKey(), entry.getValue());
+                if (cacheConfig.expiredTime() > 0) {
+                    element.setTimeToLive(cacheConfig.expiredTime());
+                }
+                return element;
+            }).collect(Collectors.toList()));
 
-        else elements.addAll(objectMap.entrySet().stream().map(entry ->
-                new Element(entry.getKey(), entry.getValue()))
-                .collect(Collectors.toList()));
+        else
+            elements.addAll(objectMap.entrySet().stream().map(entry ->
+                    new Element(entry.getKey(), entry.getValue()))
+                    .collect(Collectors.toList()));
 
-        cache.putAll(elements);
+        try {
+            cache.putAll(elements);
+        } catch (Exception e) {
+            throw new CacheException("putAll", e);
+        }
     }
 
     @Override
@@ -118,31 +128,35 @@ class EhCacheCache implements Cache, CacheEventListener {
             if (cacheConfig != null) cache.remove(CacheUtils.genCacheKey(cacheConfig, id));
             else cache.remove(id);
         } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
-            throw new CacheException(e);
+            throw new CacheException("evict", e);
         }
     }
 
     @Override
     public void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException {
-        if (cacheConfig != null) cache.removeAll(CacheUtils.genCacheKeys(cacheConfig, ids));
-        else cache.removeAll(ids);
+        try {
+            cache.removeAll(CacheUtils.genCacheKeys(cacheConfig, ids));
+        } catch (Exception e) {
+            throw new CacheException("evict-All", e);
+        }
+
     }
 
-    public void clear() throws CacheException {
-        try {
-            cache.removeAll();
-        } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
-            throw new CacheException(e);
-        }
-    }
-
-    public void destroy() throws CacheException {
-        try {
-            cache.getCacheManager().removeCache(cache.getName());
-        } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
-            throw new CacheException(e);
-        }
-    }
+//    public void clear() throws CacheException {
+//        try {
+//            cache.removeAll();
+//        } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
+//            throw new CacheException("clear", e);
+//        }
+//    }
+//
+//    public void destroy() throws CacheException {
+//        try {
+//            cache.getCacheManager().removeCache(cache.getName());
+//        } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
+//            throw new CacheException("destroy", e);
+//        }
+//    }
 
     @SuppressWarnings({"all"})
     public Object clone() throws CloneNotSupportedException {
