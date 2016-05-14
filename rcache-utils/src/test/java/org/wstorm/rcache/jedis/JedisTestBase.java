@@ -11,7 +11,7 @@ import java.util.ResourceBundle;
  * @version 1.0
  * @created 2016年05月08日
  */
-abstract class JedisTestBase {
+public abstract class JedisTestBase {
 
     protected JedisPool pool;
 

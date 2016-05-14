@@ -44,6 +44,13 @@
             </dependency>
             <dependency>
                 <groupId>org.wstorm.rcache</groupId>
+                <artifactId>utils</artifactId>
+                <classifier>tests</classifier>
+                <scope>test</scope>
+                <version>${rcache.utils.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.wstorm.rcache</groupId>
                 <artifactId>rcache-core</artifactId>
                 <version>${rcache.core.version}</version>
             </dependency>
@@ -175,6 +182,23 @@
     </dependencyManagement>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>test-jar</goal>
+                        </goals>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*Test.class</exclude>
+                                <exclude>**/IT*.class</exclude>
+                            </excludes>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -31,6 +31,11 @@
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.wstorm.rcache</groupId>
+            <artifactId>utils</artifactId>
+            <classifier>tests</classifier>
+        </dependency>
     </dependencies>
 
 </project>
