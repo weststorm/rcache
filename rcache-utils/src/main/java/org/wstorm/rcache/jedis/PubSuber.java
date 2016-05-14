@@ -18,7 +18,7 @@ public class PubSuber extends JedisWrapper {
 
     public void publish(final String channel, final byte[] message) {
         execute(jedis -> {
-            jedis.publish(serialKey(channel), message);
+            jedis.publish(serializeKey(channel), message);
             return null;
         });
     }
@@ -38,7 +38,7 @@ public class PubSuber extends JedisWrapper {
                 byte[][] channelBytes = new byte[channels.length][];
 
                 for (int i = 0; i < channels.length; i++) {
-                    channelBytes[i] = serialKey(channels[i]);
+                    channelBytes[i] = serializeKey(channels[i]);
                     log.info("订阅缓存频道{}", channels[i]);
                 }
 

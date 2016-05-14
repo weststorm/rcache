@@ -1,8 +1,16 @@
 package org.wstorm.rcache.jedis;
 
+import com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import redis.clients.jedis.Pipeline;
+import redis.clients.jedis.Response;
+
+import java.util.List;
+import java.util.concurrent.BrokenBarrierException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -21,7 +29,6 @@ public class JedisWrapperTest extends JedisTestBase {
     public void setUp() throws Exception {
         super.setUp();
         wrapper = new JedisWrapper(pool);
-
     }
 
     @After
@@ -37,9 +44,63 @@ public class JedisWrapperTest extends JedisTestBase {
     }
 
     @Test
+    public void 测试管道是否独占导致其他Client的操作被阻塞() throws Exception {
+        CountDownLatch 等等我 = new CountDownLatch(2);
+        CyclicBarrier _123走起 = new CyclicBarrier(2);
+        (new Thread(() -> {
+            try {
+                _123走起.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+            wrapper.execute(jedis -> {
+                Pipeline pipelined = jedis.pipelined();
+                List<Response<Long>> incrList = Lists.newArrayList();
+                incrList.add(pipelined.incr(key));
+                incrList.add(pipelined.incr(key));
+                try {
+                    System.out.println("thread1-我睡觉2秒");
+                    Thread.sleep(2000L);
+                    System.out.println("thread1-我睡觉2秒醒了");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                incrList.add(pipelined.incr(key));
+                pipelined.sync();
+                incrList.forEach(resp-> System.out.println("thread1-incr" + resp.get()));
+                return null;
+            });
+            等等我.countDown();
+        })).start();
+
+        (new Thread(() -> {
+            try {
+                _123走起.await();
+            } catch (InterruptedException | BrokenBarrierException e) {
+                e.printStackTrace();
+            }
+            wrapper.execute(jedis -> {
+                try {
+                    Thread.sleep(1000L);
+                    System.out.println("thread2-我睡觉1秒醒了");
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                System.out.println("thread2-incr:" + jedis.incr(key));
+
+                return null;
+            });
+            等等我.countDown();
+        })).start();
+
+        等等我.await();
+        Thread.sleep(100L);
+    }
+
+    @Test
     public void serialKey() throws Exception {
-        byte[] bytes = wrapper.serialKey(key);
-        assertThat(wrapper.deserialKey(bytes)).isEqualTo(key);
+        byte[] bytes = wrapper.serializeKey(key);
+        assertThat(wrapper.deserializeKey(bytes)).isEqualTo(key);
     }
 
 }

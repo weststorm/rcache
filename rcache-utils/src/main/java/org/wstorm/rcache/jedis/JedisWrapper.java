@@ -42,17 +42,17 @@ public class JedisWrapper {
      * @param key redis 存储的key
      * @return 返回编码后key字节数组
      */
-    protected byte[] serialKey(String key) {
+    public byte[] serializeKey(String key) {
         return SafeEncoder.encode(key);
     }
 
     /**
-     * 触码成String
+     * 触码Key成String
      *
      * @param bytes redis key byte[]
      * @return String
      */
-    protected String deserialKey(byte[] bytes) {
+    public String deserializeKey(byte[] bytes) {
         return SafeEncoder.encode(bytes);
     }
 

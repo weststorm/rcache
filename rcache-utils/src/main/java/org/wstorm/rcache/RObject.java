@@ -23,5 +23,7 @@ public interface RObject<ID> extends Cloneable {
      *
      * @return true为空
      */
-    boolean isBlank();
+    default boolean isBlank() {
+        return id() == null;
+    }
 }
