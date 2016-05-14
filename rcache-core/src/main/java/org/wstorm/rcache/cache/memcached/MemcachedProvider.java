@@ -39,15 +39,15 @@ public class MemcachedProvider implements CacheProvider {
         return CacheProviderType.memcached.name();
     }
 
-    public MemcachedCache buildCache(String name, CacheExpiredListener listener) throws CacheException {
+    public MemcachedCache buildCache(String regionName, CacheExpiredListener listener) throws CacheException {
         if (memcached == null) throw new CacheException("memcached client 为空");
 
         MemcachedCache cache;
-        if ((cache = _cacheManager.get(name)) == null) {
+        if ((cache = _cacheManager.get(regionName)) == null) {
             synchronized (this) {
-                if ((cache = _cacheManager.get(name)) == null) {
-                    cache = new MemcachedCache(name, memcached);
-                    _cacheManager.put(name, cache);
+                if ((cache = _cacheManager.get(regionName)) == null) {
+                    cache = new MemcachedCache(regionName, memcached);
+                    _cacheManager.put(regionName, cache);
                 }
             }
         }

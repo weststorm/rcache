@@ -51,30 +51,30 @@ public class EhCacheProvider implements CacheProvider {
      * Builds a Cache. Even though this method provides properties, they are not
      * used. Properties for EHCache are specified in the ehcache.xml file.
      * Configuration will be read from ehcache.xml for a cache declaration where
-     * the name attribute matches the name parameter in this builder.
+     * the regionName attribute matches the regionName parameter in this builder.
      *
-     * @param name     the name of the cache. Must match a cache configured in
+     * @param regionName     the regionName of the cache. Must match a cache configured in
      *                 ehcache.xml
      * @param listener cache listener
      * @return a newly built cache will be built and initialised
-     * @throws CacheException inter alia, if a cache of the same name already exists
+     * @throws CacheException inter alia, if a cache of the same regionName already exists
      */
-    public EhCacheCache buildCache(String name, CacheExpiredListener listener)
+    public EhCacheCache buildCache(String regionName, CacheExpiredListener listener)
             throws CacheException {
         EhCacheCache ehcache;
-        if ((ehcache = _CacheManager.get(name)) == null) {
+        if ((ehcache = _CacheManager.get(regionName)) == null) {
             try {
                 synchronized (this) {
-                    if ((ehcache = _CacheManager.get(name)) == null) {
-                        net.sf.ehcache.Cache cache = manager.getCache(name);
+                    if ((ehcache = _CacheManager.get(regionName)) == null) {
+                        net.sf.ehcache.Cache cache = manager.getCache(regionName);
                         if (cache == null) {
-                            log.warn("Could not find configuration [" + name + "]; using defaults.");
-                            manager.addCache(name);
-                            cache = manager.getCache(name);
-                            log.debug("started EHCache region: " + name);
+                            log.warn("Could not find configuration [" + regionName + "]; using defaults.");
+                            manager.addCache(regionName);
+                            cache = manager.getCache(regionName);
+                            log.debug("started EHCache region: " + regionName);
                         }
                         ehcache = new EhCacheCache(cache, listener);
-                        _CacheManager.put(name, ehcache);
+                        _CacheManager.put(regionName, ehcache);
                     }
                 }
             } catch (net.sf.ehcache.CacheException e) {
