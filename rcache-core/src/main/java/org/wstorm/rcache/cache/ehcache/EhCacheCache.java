@@ -47,13 +47,13 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker)
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker)
             throws CacheException {
 
-        if (CollectionsUtils.isEmpty(keys)) return new HashMap<>();
+        if (CollectionsUtils.isEmpty(ids)) return new HashMap<>();
 
         try {
-            return keys.stream().collect(Collectors.toMap(String::toString,
+            return ids.stream().collect(Collectors.toMap(String::toString,
                     key -> {
                         Element element = cache.get(CacheUtils.genCacheKey(cacheConfig, key));
                         if (element != null) return (T) element.getObjectValue();
@@ -65,12 +65,12 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @SuppressWarnings("unchecked")
-    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
-        if (key == null) return null;
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
+        if (id == null) return null;
         try {
-            if (cacheConfig != null) key = CacheUtils.genCacheKey(cacheConfig, key);
+            if (cacheConfig != null) id = CacheUtils.genCacheKey(cacheConfig, id);
 
-            Element element = cache.get(key);
+            Element element = cache.get(id);
 
             return element != null ? (T) element.getObjectValue() : null;
 
@@ -80,10 +80,10 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @Override
-    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException {
         try {
-            if (cacheConfig != null) key = CacheUtils.genCacheKey(cacheConfig, key);
-            Element element = new Element(key, value);
+            if (cacheConfig != null) id = CacheUtils.genCacheKey(cacheConfig, id);
+            Element element = new Element(id, value);
             if (cacheConfig != null && cacheConfig.expiredTime() > 0) {
                 element.setTimeToLive(cacheConfig.expiredTime());
             }
@@ -113,19 +113,19 @@ class EhCacheCache implements Cache, CacheEventListener {
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, String key) throws CacheException {
+    public void evict(CacheConfig cacheConfig, String id) throws CacheException {
         try {
-            if (cacheConfig != null) cache.remove(CacheUtils.genCacheKey(cacheConfig, key));
-            else cache.remove(key);
+            if (cacheConfig != null) cache.remove(CacheUtils.genCacheKey(cacheConfig, id));
+            else cache.remove(id);
         } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
             throw new CacheException(e);
         }
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException {
-        if (cacheConfig != null) cache.removeAll(CacheUtils.genCacheKeys(cacheConfig, keys));
-        else cache.removeAll(keys);
+    public void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException {
+        if (cacheConfig != null) cache.removeAll(CacheUtils.genCacheKeys(cacheConfig, ids));
+        else cache.removeAll(ids);
     }
 
     public void clear() throws CacheException {

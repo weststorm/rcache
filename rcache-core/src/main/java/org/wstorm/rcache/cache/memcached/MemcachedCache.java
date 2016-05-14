@@ -44,36 +44,36 @@ class MemcachedCache implements Cache {
     }
 
     @Override
-    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, final List<String> keys, final DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, final List<String> ids, final DataPicker<String, T> dataPicker) throws CacheException {
 
-        if (CollectionsUtils.isEmpty(keys)) return Maps.newHashMap();
+        if (CollectionsUtils.isEmpty(ids)) return Maps.newHashMap();
 
         try {
 
-            List<String> cacheKeys = CacheUtils.genCacheKeys(cacheConfig, keys);
+            List<String> cacheKeys = CacheUtils.genCacheKeys(cacheConfig, ids);
 
             Map<String, T> bulk = memcached.getBulk(cacheKeys);
-            if (dataPicker == null || CollectionsUtils.isEmpty(bulk) || bulk.size() == keys.size()) {
+            if (dataPicker == null || CollectionsUtils.isEmpty(bulk) || bulk.size() == ids.size()) {
                 return bulk;
             }
 
             Map<String, T> map;
-            if (cacheKeys.get(0).equals(keys.get(0))) map = bulk;
-            else map = Maps.newHashMapWithExpectedSize(keys.size());
+            if (cacheKeys.get(0).equals(ids.get(0))) map = bulk;
+            else map = Maps.newHashMapWithExpectedSize(ids.size());
 
-            for (int i = 0; i < keys.size(); i++) {
+            for (int i = 0; i < ids.size(); i++) {
 
                 T t = bulk.get(cacheKeys.get(i));
                 if (t == null) {
 
-                    t = dataPicker.pickup(keys.get(i));
+                    t = dataPicker.pickup(ids.get(i));
 
                     if (t == null) t = dataPicker.makeEmptyData();
 
                     memcached.set(cacheKeys.get(i), cacheConfig.expiredTime(), t);
                 }
 
-                if (t != null && !t.isBlank()) map.put(keys.get(i), t);
+                if (t != null && !t.isBlank()) map.put(ids.get(i), t);
             }
 
             return map;
@@ -84,14 +84,14 @@ class MemcachedCache implements Cache {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
-        if (key == null) return null;
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
+        if (id == null) return null;
         try {
-            String cacheKey = CacheUtils.genCacheKey(cacheConfig, key);
+            String cacheKey = CacheUtils.genCacheKey(cacheConfig, id);
             Object o = memcached.get(cacheKey);
             T t;
             if (o == null) {
-                if ((t = dataPicker.pickup(key)) == null) t = dataPicker.makeEmptyData();
+                if ((t = dataPicker.pickup(id)) == null) t = dataPicker.makeEmptyData();
                 memcached.set(cacheKey, cacheConfig.expiredTime(), t);
                 return t.isBlank() ? null : t;
             } else t = (T) o;
@@ -105,16 +105,16 @@ class MemcachedCache implements Cache {
     /**
      * Puts an object into the cache.
      *
-     * @param key   a key
+     * @param id   a key
      * @param value a value
      * @throws CacheException if the {@link CacheProvider} is stop or another
      *                        {@link Exception} occurs.
      */
     @Override
-    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException {
         try {
-            if (cacheConfig.expiredTime() < 0) memcached.set(CacheUtils.genCacheKey(cacheConfig, key), 0, value);
-            else memcached.set(CacheUtils.genCacheKey(cacheConfig, key), cacheConfig.expiredTime(), value);
+            if (cacheConfig.expiredTime() < 0) memcached.set(CacheUtils.genCacheKey(cacheConfig, id), 0, value);
+            else memcached.set(CacheUtils.genCacheKey(cacheConfig, id), cacheConfig.expiredTime(), value);
         } catch (Exception e) {
             throw new CacheException(e);
         }
@@ -125,22 +125,22 @@ class MemcachedCache implements Cache {
      * Removes the element which matches the key If no element matches, nothing
      * is removed and no Exception is thrown.
      *
-     * @param key the key of the element to remove
+     * @param id the key of the element to remove
      * @throws CacheException cache exception
      */
     @Override
-    public void evict(CacheConfig cacheConfig, String key) throws CacheException {
+    public void evict(CacheConfig cacheConfig, String id) throws CacheException {
         try {
-            memcached.delete(CacheUtils.genCacheKey(cacheConfig, key));
+            memcached.delete(CacheUtils.genCacheKey(cacheConfig, id));
         } catch (Exception e) {
             throw new CacheException(e);
         }
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException {
-        if (keys == null) return;
-        List<String> cks = CacheUtils.genCacheKeys(cacheConfig, keys);
+    public void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException {
+        if (ids == null) return;
+        List<String> cks = CacheUtils.genCacheKeys(cacheConfig, ids);
         if (cks != null) cks.forEach(key -> memcached.delete(key));
     }
 

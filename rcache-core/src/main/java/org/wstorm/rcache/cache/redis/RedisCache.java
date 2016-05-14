@@ -40,15 +40,15 @@ public class RedisCache implements Cache {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, final List<String> keys, final DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, final List<String> ids, final DataPicker<String, T> dataPicker) throws CacheException {
 
-        if (CollectionsUtils.isEmpty(keys)) return Maps.newHashMap();
+        if (CollectionsUtils.isEmpty(ids)) return Maps.newHashMap();
 
         Map<String, Response<String>> responseMap = Maps.newHashMap();
 
         jedisWrapper.execute(jedis -> {
             Pipeline pipelined = jedis.pipelined();
-            keys.forEach(key -> responseMap.put(key, pipelined.get(CacheUtils.genCacheKey(cacheConfig, key))));
+            ids.forEach(key -> responseMap.put(key, pipelined.get(CacheUtils.genCacheKey(cacheConfig, key))));
             pipelined.sync();
             return null;
         });
@@ -95,9 +95,9 @@ public class RedisCache implements Cache {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
 
-        String data = jedisWrapper.execute(jedis -> jedis.get(CacheUtils.genCacheKey(cacheConfig, key)));
+        String data = jedisWrapper.execute(jedis -> jedis.get(CacheUtils.genCacheKey(cacheConfig, id)));
 
         try {
             return (T) serializer.deserialize(data.getBytes());
@@ -107,7 +107,7 @@ public class RedisCache implements Cache {
     }
 
     @Override
-    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException {
         jedisWrapper.execute(jedis -> {
             String data = null;
             try {
@@ -115,7 +115,7 @@ public class RedisCache implements Cache {
             } catch (Exception e) {
                 throw new CacheException("put", e);
             }
-            return jedis.set(CacheUtils.genCacheKey(cacheConfig, key), data);
+            return jedis.set(CacheUtils.genCacheKey(cacheConfig, id), data);
         });
     }
 
@@ -125,13 +125,13 @@ public class RedisCache implements Cache {
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, String key) throws CacheException {
-        jedisWrapper.execute(jedis -> jedis.del(CacheUtils.genCacheKey(cacheConfig, key)));
+    public void evict(CacheConfig cacheConfig, String id) throws CacheException {
+        jedisWrapper.execute(jedis -> jedis.del(CacheUtils.genCacheKey(cacheConfig, id)));
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException {
-        jedisWrapper.execute(jedis -> jedis.del(CacheUtils.genCacheKeys(cacheConfig, keys).toArray(new String[0])));
+    public void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException {
+        jedisWrapper.execute(jedis -> jedis.del(CacheUtils.genCacheKeys(cacheConfig, ids).toArray(new String[0])));
     }
 
     public String getRegion() {

@@ -19,7 +19,7 @@ import java.util.Map;
 final class NullCache implements Cache {
 
     @Override
-    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker) throws CacheException {
         return null;
     }
 
@@ -28,12 +28,12 @@ final class NullCache implements Cache {
     }
 
     @Override
-    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException {
+    public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
         return null;
     }
 
     @Override
-    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException {
+    public <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException {
     }
 
     @Override
@@ -42,11 +42,11 @@ final class NullCache implements Cache {
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, String key) throws CacheException {
+    public void evict(CacheConfig cacheConfig, String id) throws CacheException {
     }
 
     @Override
-    public void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException {
+    public void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException {
     }
 
 }

@@ -21,12 +21,12 @@ public interface Cache {
      * 取多个缓存对象
      *
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
-     * @param keys        cache keys
+     * @param ids         object ids, is not the finally key in cached Object identifier
      * @param dataPicker  数据初始化器
      * @return Map with ID Key And T value
      * @throws CacheException 如果缓存无法提供服务异常
      */
-    <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) throws CacheException;
+    <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker) throws CacheException;
 
     /**
      * 缓存多个对象
@@ -41,19 +41,19 @@ public interface Cache {
      * 从缓存中提取单个缓存对象
      *
      * @param cacheConfig 缓存的配置
-     * @param key         cache key
+     * @param id          object id, is not the finally key in cached Object identifier
      * @return the cached object or null
      */
-    <T extends RObject<String>> T get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) throws CacheException;
+    <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException;
 
     /**
      * 增加缓存对象
      *
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
-     * @param key         cache key
+     * @param id          object id, is not the finally key in cached Object identifier
      * @param value       cache value
      */
-    <T extends RObject<String>> void put(CacheConfig cacheConfig, String key, T value) throws CacheException;
+    <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException;
 
     /**
      * 获取所有Key
@@ -67,16 +67,16 @@ public interface Cache {
      * 从缓存中移除指定对象
      *
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
-     * @param key         the cache keys to be evicted
+     * @param id          object id, is not the finally key in cached Object identifier
      */
-    void evict(CacheConfig cacheConfig, String key) throws CacheException;
+    void evict(CacheConfig cacheConfig, String id) throws CacheException;
 
     /**
      * Batch remove cache objects
      *
      * @param cacheConfig 缓存对象的缓存策略配置注解对象
-     * @param keys        the cache keys to be evicted
+     * @param ids         object ids, is not the finally key in cached Object identifier
      */
-    void evict(CacheConfig cacheConfig, List<String> keys) throws CacheException;
+    void evict(CacheConfig cacheConfig, List<String> ids) throws CacheException;
 
 }
