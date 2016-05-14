@@ -70,19 +70,19 @@ public class CacheManager {
      *
      * @param level       Cache Level: L1 and L2
      * @param cacheConfig Cache region name
-     * @param key         Cache key
+     * @param id          object id, is not the finally key in cached Object identifier
      * @param listener    listener
      * @param dataPicker  数据提取器 用于缓存失效后回调
      * @param <T>         缓存对象类型
      * @return Cache object
      */
-    public final <T extends RObject<String>> T get(int level, CacheConfig cacheConfig, String key, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
-        // System.out.println("GET1 => " + name+":"+key);
-        if (key != null) {
+    public final <T extends RObject<String>> T get(int level, CacheConfig cacheConfig, String id, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
+        // System.out.println("GET1 => " + name+":"+id);
+        if (id != null) {
             Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
-                    return cache.get(cacheConfig, key, dataPicker);
+                    return cache.get(cacheConfig, id, dataPicker);
                 } catch (Exception e) {
                     log.warn("get {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
@@ -98,19 +98,19 @@ public class CacheManager {
      *
      * @param level       Cache Level: L1 and L2
      * @param cacheConfig Cache配置
-     * @param keys        Cache keys
+     * @param ids         object ids, is not the finally key in cached Object identifier
      * @param listener    缓存过期监听器
      * @param dataPicker  缓存失效后的数据提取回调接口
      * @param <T>         缓存对象类型
      * @return 返回缓存Key, Value Map
      */
-    public final <T extends RObject<String>> Map<String, T> getAll(int level, CacheConfig cacheConfig, List<String> keys, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
+    public final <T extends RObject<String>> Map<String, T> getAll(int level, CacheConfig cacheConfig, List<String> ids, CacheExpiredListener listener, DataPicker<String, T> dataPicker) {
         // System.out.println("GET1 => " + name+":"+key);
-        if (keys != null) {
+        if (ids != null) {
             Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
-                    return cache.getAll(cacheConfig, keys, dataPicker);
+                    return cache.getAll(cacheConfig, ids, dataPicker);
                 } catch (Exception e) {
                     log.warn("getAll {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
@@ -136,12 +136,12 @@ public class CacheManager {
         }
     }
 
-    public final <T extends RObject<String>> void set(int level, CacheConfig cacheConfig, String key, T value, CacheExpiredListener listener) {
-        if (key != null && value != null) {
+    public final <T extends RObject<String>> void set(int level, CacheConfig cacheConfig, String id, T value, CacheExpiredListener listener) {
+        if (id != null && value != null) {
             Cache cache = _GetCache(level, cacheConfig.region(), listener);
             if (cache != null)
                 try {
-                    cache.put(cacheConfig, key, value);
+                    cache.put(cacheConfig, id, value);
                 } catch (Exception e) {
                     log.warn("set {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
@@ -156,18 +156,17 @@ public class CacheManager {
      *
      * @param level Cache Level: L1 and L2
      * @param name  Cache region name
-     * @param key   Cache key
+     * @param id    object id, is not the finally key in cached Object identifier
      */
-    public final void evict(int level, CacheConfig cacheConfig, String name, String key, CacheExpiredListener listener) {
-        // batchEvict(level, name, java.util.Arrays.asList(key));
+    public final void evict(int level, CacheConfig cacheConfig, String name, String id, CacheExpiredListener listener) {
         if (name == null && cacheConfig != null) {
             name = cacheConfig.region();
         }
-        if (name != null && key != null) {
+        if (name != null && id != null) {
             Cache cache = _GetCache(level, name, listener);
             if (cache != null)
                 try {
-                    cache.evict(cacheConfig, key);
+                    cache.evict(cacheConfig, id);
                 } catch (Exception e) {
                     log.warn("evict {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
@@ -183,18 +182,18 @@ public class CacheManager {
      * @param level       Cache Level： L1 and L2
      * @param cacheConfig cache 配置
      * @param name        Cache region name
-     * @param keys        Cache keys
+     * @param ids         object id, is not the finally key in cached Object identifier
      * @param listener    过期监听器
      */
-    public final void batchEvict(int level, CacheConfig cacheConfig, String name, List<String> keys, CacheExpiredListener listener) {
+    public final void batchEvict(int level, CacheConfig cacheConfig, String name, List<String> ids, CacheExpiredListener listener) {
         if (cacheConfig != null) {
             name = cacheConfig.region();
         }
-        if (name != null && keys != null && keys.size() > 0) {
+        if (name != null && ids != null && ids.size() > 0) {
             Cache cache = _GetCache(level, name, listener);
             if (cache != null)
                 try {
-                    cache.evict(cacheConfig, keys);
+                    cache.evict(cacheConfig, ids);
                 } catch (Exception e) {
                     log.warn("batchEvict {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {

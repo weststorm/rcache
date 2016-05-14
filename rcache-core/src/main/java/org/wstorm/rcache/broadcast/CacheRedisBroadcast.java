@@ -122,21 +122,21 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * 获取缓存中的数据
      *
      * @param cacheConfig Cache Region name
-     * @param key         Cache key
+     * @param id          object id, is not the finally key in cached Object identifier
      * @param dataPicker  缓存过期时间。
      * @return cacheObject include cacheObject T
      */
-    public <T extends RObject<String>> CacheObject<T> get(CacheConfig cacheConfig, String key, DataPicker<String, T> dataPicker) {
+    public <T extends RObject<String>> CacheObject<T> get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) {
         CacheObject<T> obj = new CacheObject<>();
         obj.setRegion(cacheConfig.region());
-        obj.setKey(key);
-        if (key != null) {
-            obj.setValue(cacheManager.get(LEVEL_1, cacheConfig, key, this, dataPicker));
+        obj.setKey(id);
+        if (id != null) {
+            obj.setValue(cacheManager.get(LEVEL_1, cacheConfig, id, this, dataPicker));
             if (obj.getValue() == null) {
-                obj.setValue(cacheManager.get(LEVEL_2, cacheConfig, key, this, dataPicker));
+                obj.setValue(cacheManager.get(LEVEL_2, cacheConfig, id, this, dataPicker));
                 if (obj.getValue() != null) {
                     obj.setLevel(LEVEL_2);
-                    cacheManager.set(LEVEL_1, cacheConfig, key, obj.getValue(), this);
+                    cacheManager.set(LEVEL_1, cacheConfig, id, obj.getValue(), this);
                 }
             } else obj.setLevel(LEVEL_1);
         }
@@ -147,26 +147,26 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * 写入缓存
      *
      * @param cacheConfig cache config
-     * @param key         cache key
+     * @param id          object id, is not the finally key in cached Object identifier
      * @param value       cache object
      */
-    public <T extends RObject<String>> void set(CacheConfig cacheConfig, String key, T value) {
-        if (key != null) {
-            if (value == null) evict(cacheConfig, cacheConfig.region(), key);
+    public <T extends RObject<String>> void set(CacheConfig cacheConfig, String id, T value) {
+        if (id != null) {
+            if (value == null) evict(cacheConfig, cacheConfig.region(), id);
             else {
                 // 分几种情况
                 // 1. L1 和 L2 都没有
                 // 2. L1 有 L2 没有（这种情况不存在，除非是写 L2 的时候失败
                 // 3. L1 没有，L2 有
                 // 4. L1 和 L2 都有
-                _publishEvictCmd(cacheConfig.region(), CacheUtils.genCacheKey(cacheConfig, key));// 清除原有的一级缓存的内容
-                cacheManager.set(LEVEL_1, cacheConfig, key, value, this);
-                cacheManager.set(LEVEL_2, cacheConfig, key, value, this);
+                _publishEvictCmd(cacheConfig.region(), CacheUtils.genCacheKey(cacheConfig, id));// 清除原有的一级缓存的内容
+                cacheManager.set(LEVEL_1, cacheConfig, id, value, this);
+                cacheManager.set(LEVEL_2, cacheConfig, id, value, this);
             }
         }
 
         if (log.isDebugEnabled()) {
-            log.debug("write data to cache region={}| key={}| value={}", cacheConfig.region(), key, value);
+            log.debug("write data to cache region={}| id={}| value={}", cacheConfig.region(), id, value);
         }
     }
 
@@ -182,32 +182,32 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * 删除缓存
      *
      * @param cacheConfig 配置项
-     * @param key         主Key
+     * @param id          object id, is not the finally key in cached Object identifier
      */
-    public void evict(CacheConfig cacheConfig, String key) {
-        evict(cacheConfig, cacheConfig.region(), key);
+    public void evict(CacheConfig cacheConfig, String id) {
+        evict(cacheConfig, cacheConfig.region(), id);
     }
 
     /**
      * 删除缓存
      *
      * @param region Cache Region name
-     * @param key    Cache key
+     * @param id     object id, is not the finally key in cached Object identifier
      */
-    public void evict(CacheConfig cacheConfig, String region, String key) {
-        cacheManager.evict(LEVEL_1, cacheConfig, region, key, this); // 删除一级缓存
-        cacheManager.evict(LEVEL_2, cacheConfig, region, key, this); // 删除二级缓存
-        _publishEvictCmd(region, CacheUtils.genCacheKey(cacheConfig, key)); // 发送广播
+    public void evict(CacheConfig cacheConfig, String region, String id) {
+        cacheManager.evict(LEVEL_1, cacheConfig, region, id, this); // 删除一级缓存
+        cacheManager.evict(LEVEL_2, cacheConfig, region, id, this); // 删除二级缓存
+        _publishEvictCmd(region, CacheUtils.genCacheKey(cacheConfig, id)); // 发送广播
     }
 
     /**
      * 批量删除缓存
      *
      * @param cacheConfig cache config
-     * @param keys        cache keys
+     * @param ids         object id, is not the finally key in cached Object identifier
      */
-    public void batchEvict(CacheConfig cacheConfig, List<String> keys) {
-        batchEvict(cacheConfig, cacheConfig.region(), keys);
+    public void batchEvict(CacheConfig cacheConfig, List<String> ids) {
+        batchEvict(cacheConfig, cacheConfig.region(), ids);
     }
 
     /**
@@ -215,12 +215,12 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      *
      * @param cacheConfig cache config
      * @param region      Cache region name
-     * @param keys        Cache key
+     * @param ids         object id, is not the finally key in cached Object identifier
      */
-    public void batchEvict(CacheConfig cacheConfig, String region, List<String> keys) {
-        cacheManager.batchEvict(LEVEL_1, cacheConfig, region, keys, this);
-        cacheManager.batchEvict(LEVEL_2, cacheConfig, region, keys, this);
-        _publishEvictCmd(region, keys);
+    public void batchEvict(CacheConfig cacheConfig, String region, List<String> ids) {
+        cacheManager.batchEvict(LEVEL_1, cacheConfig, region, ids, this);
+        cacheManager.batchEvict(LEVEL_2, cacheConfig, region, ids, this);
+        _publishEvictCmd(region, ids);
     }
 
     /**
@@ -302,21 +302,21 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * 批量获取
      *
      * @param cacheConfig cache config annotation
-     * @param keys        key list
+     * @param ids         object ids, is not the finally key in cached Object identifier
      * @param dataPicker  cache data pick from db layer
      * @param <T>         cache object type
      * @return cacheObject include map<String,T>
      */
-    public <T extends RObject<String>> CacheObject<Map<String, T>> getList(CacheConfig cacheConfig, List<String> keys, DataPicker<String, T> dataPicker) {
+    public <T extends RObject<String>> CacheObject<Map<String, T>> getList(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker) {
         CacheObject<Map<String, T>> obj = new CacheObject<>();
-        obj.setKey(StringUtils.join(keys, ","));
+        obj.setKey(StringUtils.join(ids, ","));
         obj.setRegion(cacheConfig.region());
-        if (keys != null && !keys.isEmpty()) {
-            Map<String, T> bulk = cacheManager.getAll(LEVEL_1, cacheConfig, keys, this, dataPicker);
-            if (CollectionsUtils.isEmpty(bulk) || bulk.size() < keys.size()) {
-                bulk = cacheManager.getAll(LEVEL_2, cacheConfig, keys, this, dataPicker);
+        if (ids != null && !ids.isEmpty()) {
+            Map<String, T> bulk = cacheManager.getAll(LEVEL_1, cacheConfig, ids, this, dataPicker);
+            if (CollectionsUtils.isEmpty(bulk) || bulk.size() < ids.size()) {
+                bulk = cacheManager.getAll(LEVEL_2, cacheConfig, ids, this, dataPicker);
 
-                if (CollectionsUtils.isNotEmpty(bulk) && bulk.size() == keys.size()) {
+                if (CollectionsUtils.isNotEmpty(bulk) && bulk.size() == ids.size()) {
                     obj.setLevel(LEVEL_2);
                     cacheManager.setAll(LEVEL_1, cacheConfig, bulk, this);
                 }

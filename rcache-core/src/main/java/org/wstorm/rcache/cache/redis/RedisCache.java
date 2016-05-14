@@ -48,7 +48,7 @@ public class RedisCache implements Cache {
 
         jedisWrapper.execute(jedis -> {
             Pipeline pipelined = jedis.pipelined();
-            ids.forEach(key -> responseMap.put(key, pipelined.get(CacheUtils.genCacheKey(cacheConfig, key))));
+            ids.forEach(id -> responseMap.put(id, pipelined.get(CacheUtils.genCacheKey(cacheConfig, id))));
             pipelined.sync();
             return null;
         });
