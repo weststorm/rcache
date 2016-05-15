@@ -48,14 +48,15 @@ public class KryoPoolSerializer implements Serializer {
      * @throws Exception exception
      */
     @Override
-    public Object deserialize(byte[] bytes) throws Exception {
+    @SuppressWarnings("unchecked")
+    public <T> T deserialize(byte[] bytes) throws Exception {
 
         if (bytes == null) throw new Exception("bytes can not be null");
 
         try (KryoWrapper kryoWrapper = (KryoWrapper) Holder.kryoPool.borrow()) {
 
             kryoWrapper.input.setBuffer(bytes, 0, bytes.length);
-            return kryoWrapper.readClassAndObject(kryoWrapper.input);
+            return (T) kryoWrapper.readClassAndObject(kryoWrapper.input);
         } catch (Exception e) {
             throw new Exception("Deserialize bytes exception", e);
         }

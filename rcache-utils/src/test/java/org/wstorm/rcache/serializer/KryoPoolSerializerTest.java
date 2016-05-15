@@ -31,14 +31,14 @@ public class KryoPoolSerializerTest {
 
         assertThat(bytes).isEqualTo(this.bytes);
 
-        SObject desObj = (SObject) serializer.deserialize(bytes);
+        SObject desObj = serializer.deserialize(bytes);
 
         assertThat(o).isEqualTo(desObj);
     }
 
     @Test
     public void deserialize() throws Exception {
-        SObject desObj = (SObject) serializer.deserialize(bytes);
+        SObject desObj = serializer.deserialize(bytes);
         assertThat(desObj.id).isEqualTo("101");
         assertThat(desObj.sum).isEqualTo(999);
     }
