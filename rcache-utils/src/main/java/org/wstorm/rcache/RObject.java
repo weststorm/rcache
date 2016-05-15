@@ -10,13 +10,11 @@ package org.wstorm.rcache;
 public interface RObject<ID> extends Cloneable {
 
     /**
-     * 取id字段值
+     * 取对象主键的字段值
      *
-     * @return id字段值
+     * @return 主键值
      */
-    default ID id() {
-        return null;
-    }
+    ID id();
 
     /**
      * 是否为空对象
