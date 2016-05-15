@@ -8,6 +8,7 @@ import org.wstorm.rcache.annotation.CacheConfig;
 import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * 工具类
@@ -16,11 +17,12 @@ import java.util.Map;
  * @version 1.0
  * @created 2016年5月06日
  */
-public class CacheUtils {
+public final class CacheUtils {
+
     /**
      * 默认注解
      */
-    final static CacheConfig defaultCacheAnno = new CacheConfig() {
+    final static CacheConfig defaultCacheConfig = new CacheConfig() {
 
         @Override
         public Class<? extends Annotation> annotationType() {
@@ -29,12 +31,12 @@ public class CacheUtils {
 
         @Override
         public String region() {
-            return "unknown";
+            return "sys.cache";
         }
 
         @Override
         public String keyPrefix() {
-            return null;
+            return "default";
         }
 
         @Override
@@ -42,6 +44,8 @@ public class CacheUtils {
             return 0;
         }
     };
+    
+    private static final String separator = ":";
 
     /**
      * 取缓存定义类
@@ -53,7 +57,7 @@ public class CacheUtils {
         if (cacheObjectClass != null) {
             return cacheObjectClass.getAnnotation(CacheConfig.class);
         }
-        return defaultCacheAnno;
+        return defaultCacheConfig;
     }
 
     /**
@@ -110,25 +114,11 @@ public class CacheUtils {
         if (cacheConfig == null) {
             return keyStr;
         }
-        if (StringUtils.isNotBlank(cacheConfig.region())) {
-            if (keyStr.startsWith(cacheConfig.region())) {
-                return keyStr;
-            } else {
-                if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
-                    return concat(cacheConfig.region(), cacheConfig.keyPrefix(), keyStr);
-                } else {
-                    return keyStr;
-                }
-            }
+        String ahead = concat(cacheConfig.region(), cacheConfig.keyPrefix());
+        if (keyStr.startsWith(ahead + separator)) {
+            return keyStr;
         } else {
-            if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
-                if (keyStr.startsWith(cacheConfig.keyPrefix())) {
-                    return keyStr;
-                }
-                return concat(cacheConfig.keyPrefix(), keyStr);
-            } else {
-                return keyStr;
-            }
+            return concat(ahead, keyStr);
         }
     }
 
@@ -140,45 +130,14 @@ public class CacheUtils {
      * @return 生成缓存Key列表
      */
     public static <ID> List<String> genCacheKeys(final CacheConfig cacheConfig, final List<ID> keys) {
-        List<String> fixKeys = Lists.newArrayListWithCapacity(keys.size());
         if (cacheConfig == null) {
-            for (ID key : keys) {
-                fixKeys.add(key.toString());
-            }
-            return fixKeys;
+            return keys.stream().map(Object::toString).collect(Collectors.toList());
         }
-        if (StringUtils.isBlank(cacheConfig.region())) {
-            if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
-                for (ID key : keys) {
-                    if (key.toString().startsWith(cacheConfig.keyPrefix())) {
-                        fixKeys.add(key.toString());
-                    } else {
-                        fixKeys.add(concat(cacheConfig.keyPrefix(), key.toString()));
-                    }
-                }
-            } else {
-                for (ID key : keys) fixKeys.add(key.toString());
-            }
-        } else {
-            if (StringUtils.isNotBlank(cacheConfig.keyPrefix())) {
-                for (ID key : keys) {
-                    if (key.toString().startsWith(cacheConfig.region())) {
-                        fixKeys.add(key.toString());
-                    } else {
-                        fixKeys.add(concat(cacheConfig.region(), cacheConfig.keyPrefix(), key.toString()));
-                    }
-                }
-            } else {
-                for (ID key : keys) {
-                    if (key.toString().startsWith(cacheConfig.region())) {
-                        fixKeys.add(key.toString());
-                    } else {
-                        fixKeys.add(concat(cacheConfig.region(), key.toString()));
-                    }
-                }
-            }
-        }
-        return fixKeys;
+
+        String pp = concat(cacheConfig.region(), cacheConfig.keyPrefix()),
+                ahead = pp + separator;
+
+        return keys.stream().map(key -> key.toString().startsWith(ahead) ? key.toString() : concat(pp, key.toString())).collect(Collectors.toList());
     }
 
     /**
@@ -189,7 +148,7 @@ public class CacheUtils {
      */
     public static String concat(final String... strs) {
         Preconditions.checkNotNull(strs);
-        return StringUtils.join(strs, ":");
+        return StringUtils.join(strs, separator);
     }
 
     /**

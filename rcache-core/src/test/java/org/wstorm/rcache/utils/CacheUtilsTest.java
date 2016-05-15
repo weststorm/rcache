@@ -1,6 +1,7 @@
 package org.wstorm.rcache.utils;
 
 import com.google.common.collect.Maps;
+import org.junit.Before;
 import org.junit.Test;
 import org.wstorm.rcache.annotation.CacheConfig;
 
@@ -9,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.wstorm.rcache.utils.CacheUtils.defaultCacheConfig;
 
 /**
  * @author sunyp
@@ -26,45 +28,60 @@ public class CacheUtilsTest {
     @Test
     public void getCacheAnnotation() throws Exception {
         assertThat(CacheUtils.getCacheAnnotation(TestCacheObject.class)).isNotNull();
-        assertThat(CacheUtils.getCacheAnnotation(null)).isEqualTo(CacheUtils.defaultCacheAnno);
+        assertThat(CacheUtils.getCacheAnnotation(null).annotationType()).isEqualTo(defaultCacheConfig.annotationType());
         assertThat(CacheUtils.getCacheAnnotation(Object.class)).isNull();
     }
 
     @Test
     public void getCacheRegion() throws Exception {
         assertThat(CacheUtils.getCacheRegion(TestCacheObject.class)).isEqualTo(region);
-        assertThat(CacheUtils.getCacheRegion(null)).isEqualTo("unknown");
+        assertThat(CacheUtils.getCacheRegion(null)).isEqualTo(defaultCacheConfig.region());
+        assertThat(CacheUtils.getCacheRegion(String.class)).isNull();
     }
 
     @Test
     public void getCacheExpiredTime() throws Exception {
         assertThat(CacheUtils.getCacheExpiredTime(TestCacheObject.class)).isEqualTo(expiredTime);
         assertThat(CacheUtils.getCacheExpiredTime(null)).isZero();
+        assertThat(CacheUtils.getCacheExpiredTime(String.class)).isZero();
     }
 
     @Test
     public void getCacheKeyPrefix() throws Exception {
         assertThat(CacheUtils.getCacheKeyPrefix(TestCacheObject.class)).isEqualTo(keyPrefix);
-        assertThat(CacheUtils.getCacheKeyPrefix(null)).isNull();
+        assertThat(CacheUtils.getCacheKeyPrefix(null)).isEqualTo(defaultCacheConfig.keyPrefix());
+        assertThat(CacheUtils.getCacheKeyPrefix(String.class)).isNull();
     }
 
     @Test
     public void genCacheKey() throws Exception {
 
-        String cacheKey = CacheUtils.genCacheKey(CacheUtils.getCacheAnnotation(TestCacheObject.class), ID);
+        CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestCacheObject.class);
+        String cacheKey = CacheUtils.genCacheKey(cacheConfig, ID);
         assertThat(cacheKey).isNotNull();
         assertThat(cacheKey).startsWith(CacheUtils.getCacheRegion(TestCacheObject.class));
         assertThat(cacheKey).isNotEqualTo(ID);
+        assertThat(CacheUtils.genCacheKey(null, ID)).isEqualTo(ID);
 
-        String id = CacheUtils.getIdByCacheKey(CacheUtils.getCacheAnnotation(TestCacheObject.class), cacheKey);
-        assertThat(id).isEqualTo(ID);
+        assertThat(CacheUtils.genCacheKey(cacheConfig, cacheKey)).isEqualTo(cacheKey);
+
+        assertThat(CacheUtils.getIdByCacheKey(cacheConfig, cacheKey)).isEqualTo(ID);
+
+        assertThat(CacheUtils.getIdByCacheKey(null, cacheKey)).isEqualTo(cacheKey);
+        assertThat(CacheUtils.getIdByCacheKey(null, ID)).isEqualTo(ID);
+
     }
 
     @Test
     public void genCacheKeys() throws Exception {
-        List<String> cacheKeys = CacheUtils.genCacheKeys(CacheUtils.getCacheAnnotation(TestCacheObject.class), Arrays.asList(ID, ID, ID));
+        CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestCacheObject.class);
+        List<String> ids = Arrays.asList(ID, ID, ID);
+        List<String> cacheKeys = CacheUtils.genCacheKeys(cacheConfig, ids);
         assertThat(cacheKeys).isNotNull();
         assertThat(cacheKeys.size()).isEqualTo(3);
+        assertThat(
+                CacheUtils.genCacheKeys(null, ids)
+        ).isEqualTo(ids);
     }
 
     @Test

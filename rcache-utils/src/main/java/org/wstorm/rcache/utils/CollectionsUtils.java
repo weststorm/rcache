@@ -16,8 +16,6 @@ import java.util.Map;
  */
 public final class CollectionsUtils {
 
-    private CollectionsUtils() {
-    }
     /**
      * 判断是否为空.
      *
