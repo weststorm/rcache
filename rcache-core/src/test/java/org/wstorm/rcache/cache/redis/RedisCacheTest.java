@@ -34,7 +34,7 @@ public class RedisCacheTest extends JedisTestBase {
             if (ids.contains(key)) {
                 return new TestObj(key, 100);
             }
-            return makeEmptyData();
+            return null;
         }
 
         @Override
@@ -44,6 +44,7 @@ public class RedisCacheTest extends JedisTestBase {
     };
 
     private CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
+    private CacheConfig noExpiredCacheConfig = CacheUtils.getCacheAnnotation(null);
 
     private RedisCache cache;
 
@@ -57,6 +58,7 @@ public class RedisCacheTest extends JedisTestBase {
     @After
     public void tearDown() throws Exception {
         cache.evict(cacheConfig, ids);
+        cache.evict(noExpiredCacheConfig, ids);
     }
 
     @Test
@@ -73,17 +75,16 @@ public class RedisCacheTest extends JedisTestBase {
 
     @Test
     public void putAll() throws Exception {
-        Map<String, TestObj> getAll = cache.getAll(cacheConfig, ids, null);
+        Map<String, TestObj> getAll = cache.getAll(noExpiredCacheConfig, ids, null);
         getAll.forEach((key, obj) -> assertThat(obj).isNull());
 
         Map<String, TestObj> objectMap = ids.stream().collect(
                 Collectors.toMap(String::toString, dataPicker::pickup));
 
-        cache.putAll(cacheConfig, objectMap);
+        cache.putAll(noExpiredCacheConfig, objectMap);
 
-        getAll = cache.getAll(cacheConfig, ids, null);
+        getAll = cache.getAll(noExpiredCacheConfig, ids, null);
         getAll.forEach((key, obj) -> {
-            assertThat(obj).isNotNull();
             assertThat(obj.isBlank()).isFalse();
             assertThat(obj.id()).isEqualTo(key);
         });
@@ -96,15 +97,18 @@ public class RedisCacheTest extends JedisTestBase {
         obj = cache.get(cacheConfig, ids.get(0), dataPicker);
         assertThat(obj).isNotNull();
         assertThat(obj.id()).isEqualTo(ids.get(0));
+
+        obj = cache.get(cacheConfig, "null-noExists", dataPicker);
+        assertThat(obj.isBlank()).isTrue();
     }
 
     @Test
     public void put() throws Exception {
-        TestObj obj = cache.get(cacheConfig, ids.get(0), null);
+        TestObj obj = cache.get(noExpiredCacheConfig, ids.get(0), null);
         assertThat(obj).isNull();
         obj = dataPicker.pickup(ids.get(0));
-        cache.put(cacheConfig, obj.id(), obj);
-        TestObj get = cache.get(cacheConfig, ids.get(0), null);
+        cache.put(noExpiredCacheConfig, obj.id(), obj);
+        TestObj get = cache.get(noExpiredCacheConfig, ids.get(0), null);
         assertThat(get).isNotNull();
         assertThat(get).isEqualTo(obj);
     }
