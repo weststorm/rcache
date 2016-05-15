@@ -14,9 +14,9 @@ import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Redis cache implement
@@ -50,22 +50,22 @@ public class RedisCache implements Cache {
 
         jedisWrapper.execute(jedis -> {
             Pipeline pipelined = jedis.pipelined();
-            try {
-                ids.forEach(id -> responseMap.put(id, pipelined.get(CacheUtils.genCacheKey(cacheConfig, id))));
-            } finally {
-                pipelined.sync();
-            }
+            ids.forEach(id -> responseMap.put(id, pipelined.get(CacheUtils.genCacheKey(cacheConfig, id))));
+            pipelined.sync();
             return null;
         });
 
         Map<String, T> backOff = Maps.newHashMap();
 
         try {
-            return responseMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey,
-                    responseEntry -> getBackOff(cacheConfig,
-                            responseEntry.getKey(),
-                            dataPicker,
-                            responseEntry.getValue().get())));
+
+            Map<String, T> result = Maps.newHashMapWithExpectedSize(responseMap.size());
+            responseMap.forEach((id, responseEntry) -> {
+                T t = getBackOff(id, dataPicker, responseEntry.get());
+                if (t != null) backOff.put(id, t);
+                result.put(id, t);
+            });
+            return result;
         } finally {
             if (!backOff.isEmpty()) {
                 try {
@@ -84,7 +84,9 @@ public class RedisCache implements Cache {
             return jedisWrapper.execute(jedis -> {
                 String cacheKey = CacheUtils.genCacheKey(cacheConfig, id);
                 String serialData = jedis.get(cacheKey);
-                return getBackOff(cacheConfig, id, dataPicker, serialData);
+                T t = getBackOff(id, dataPicker, serialData);
+                if (t != null) put(cacheConfig, id, t);
+                return t;
             });
         } catch (Exception e) {
             throw new CacheException("get", e);
@@ -92,10 +94,10 @@ public class RedisCache implements Cache {
     }
 
     @SuppressWarnings("unchecked")
-    private <T extends RObject<String>> T getBackOff(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker, String serialData) {
+    private <T extends RObject<String>> T getBackOff(String id, DataPicker<String, T> dataPicker, String serialData) {
         if (serialData != null) {
             try {
-                return (T) serializer.deserialize(serialData.getBytes());
+                return (T) serializer.deserialize(Base64.getDecoder().decode(serialData));
             } catch (Exception e) {
                 throw new CacheException("getBackOff", e);
             }
@@ -104,9 +106,10 @@ public class RedisCache implements Cache {
         if (dataPicker == null) return null;
 
         T t;
-        if ((t = dataPicker.pickup(id)) != null || (t = dataPicker.makeEmptyData()) != null) put(cacheConfig, id, t);
+        if ((t = dataPicker.pickup(id)) == null)
+            t = dataPicker.makeEmptyData();
 
-        return t != null ? (t.isBlank() ? null : t) : null;
+        return t;
 
     }
 
@@ -125,12 +128,12 @@ public class RedisCache implements Cache {
                                     pipelined.setex(
                                             jedisWrapper.serializeKey(CacheUtils.genCacheKey(cacheConfig, tEntry.getKey())),
                                             cacheConfig.expiredTime(),
-                                            serializer.serialize(tEntry.getValue())
+                                            Base64.getEncoder().encode(serializer.serialize(tEntry.getValue()))
                                     );
                                 else
                                     pipelined.set(
                                             jedisWrapper.serializeKey(CacheUtils.genCacheKey(cacheConfig, tEntry.getKey())),
-                                            serializer.serialize(tEntry.getValue())
+                                            Base64.getEncoder().encode(serializer.serialize(tEntry.getValue()))
                                     );
                             } catch (Exception e) {
                                 throw new CacheException("putAll", e);
@@ -152,12 +155,12 @@ public class RedisCache implements Cache {
                     return jedis.setex(
                             jedisWrapper.serializeKey(CacheUtils.genCacheKey(cacheConfig, id)),
                             cacheConfig.expiredTime(),
-                            serializer.serialize(value)
+                            Base64.getEncoder().encode(serializer.serialize(value))
                     );
                 else
                     return jedis.set(
                             jedisWrapper.serializeKey(CacheUtils.genCacheKey(cacheConfig, id)),
-                            serializer.serialize(value)
+                            Base64.getEncoder().encode(serializer.serialize(value))
                     );
 
             } catch (Exception e) {

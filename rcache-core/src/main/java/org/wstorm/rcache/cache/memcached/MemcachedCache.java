@@ -97,8 +97,8 @@ class MemcachedCache implements Cache {
         T t;
         if ((t = dataPicker.pickup(id)) != null || (t = dataPicker.makeEmptyData()) != null)
             memcached.set(cacheKey, cacheConfig.expiredTime(), t);
-
-        return t != null ? (t.isBlank() ? null : t) : null;
+        return t;
+//        return t != null ? (t.isBlank() ? null : t) : null;
     }
 
     /**

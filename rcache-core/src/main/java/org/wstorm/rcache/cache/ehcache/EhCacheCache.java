@@ -79,7 +79,7 @@ class EhCacheCache implements Cache, CacheEventListener {
             if ((t = dataPicker.pickup(id)) != null || (t = dataPicker.makeEmptyData()) != null)
                 put(cacheConfig, id, t);
 
-            return t != null ? (!t.isBlank() ? t : null) : null;
+            return t;
         }
     }
 
