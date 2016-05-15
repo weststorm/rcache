@@ -4,9 +4,13 @@ import com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.wstorm.rcache.serializer.KryoPoolSerializer;
+import org.wstorm.rcache.serializer.SObject;
+import org.wstorm.rcache.serializer.Serializer;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Response;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CountDownLatch;
@@ -21,9 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class JedisWrapperTest extends JedisTestBase {
 
-    protected JedisWrapper wrapper;
-
-    protected String key = "key_jedisWrapperTest";
+    private Serializer serializer = new KryoPoolSerializer();
+    private JedisWrapper wrapper;
+    private String key = "key_jedisWrapperTest";
 
     @Before
     public void setUp() throws Exception {
@@ -41,6 +45,31 @@ public class JedisWrapperTest extends JedisTestBase {
     public void execute() throws Exception {
         assertThat((Long) wrapper.execute(jedis -> jedis.rpush(key, "test"))).isEqualTo(1);
         assertThat((String) wrapper.execute(jedis -> jedis.lpop(key))).isEqualTo("test");
+    }
+
+    @Test
+    public void testSerialize() throws Exception {
+        SObject obj = new SObject("888", 1888);
+
+        SObject actual = wrapper.execute(jedis -> {
+            try {
+                byte[] serialize = serializer.serialize(obj);
+                byte[] base64 = Base64.getEncoder().encode(serialize);
+                System.out.println("serialize.length=" + serialize.length + ", base64.length=" + base64.length);
+                jedis.set(wrapper.serializeKey(obj.id()), base64);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            String serialData = jedis.get(obj.id());
+            try {
+                return (SObject) serializer.deserialize(Base64.getDecoder().decode(serialData));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return null;
+        });
+        assertThat(actual).isNotNull();
+        assertThat(actual.id()).isEqualTo(obj.id());
     }
 
     @Test
@@ -67,7 +96,7 @@ public class JedisWrapperTest extends JedisTestBase {
                 }
                 incrList.add(pipelined.incr(key));
                 pipelined.sync();
-                incrList.forEach(resp-> System.out.println("thread1-incr" + resp.get()));
+                incrList.forEach(resp -> System.out.println("thread1-incr" + resp.get()));
                 return null;
             });
             等等我.countDown();

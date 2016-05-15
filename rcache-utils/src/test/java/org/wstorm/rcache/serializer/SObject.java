@@ -2,12 +2,29 @@ package org.wstorm.rcache.serializer;
 
 import org.wstorm.rcache.RObject;
 
-class SObject implements RObject<String> {
+public class SObject implements RObject<String> {
 
 
-     String id;
+    String id;
 
-     int sum;
+    int sum;
+
+    public SObject() { //kryo need it
+
+    }
+
+    public SObject(String id, int sum) {
+        this.id = id;
+        this.sum = sum;
+    }
+
+    public String getId() {
+        return id();
+    }
+
+    public int getSum() {
+        return sum;
+    }
 
     @Override
     public String id() {
@@ -26,7 +43,7 @@ class SObject implements RObject<String> {
 
         SObject sObject = (SObject) o;
 
-        return sum == sObject.sum && (id != null ? id.equals(sObject.id) : sObject.id == null);
+        return sum == sObject.getSum() && (getId() != null ? id.equals(sObject.id) : sObject.id == null);
 
     }
 
