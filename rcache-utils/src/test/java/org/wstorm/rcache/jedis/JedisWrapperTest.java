@@ -49,18 +49,18 @@ public class JedisWrapperTest extends JedisTestBase {
 
     @Test
     public void testSerialize() throws Exception {
-        SObject obj = new SObject("888", 1888);
+        SObject expect = new SObject("888", 1888);
 
         SObject actual = wrapper.execute(jedis -> {
             try {
-                byte[] serialize = serializer.serialize(obj);
+                byte[] serialize = serializer.serialize(expect);
                 byte[] base64 = Base64.getEncoder().encode(serialize);
                 System.out.println("serialize.length=" + serialize.length + ", base64.length=" + base64.length);
-                jedis.set(wrapper.serializeKey(obj.id()), base64);
+                jedis.set(wrapper.serializeKey(expect.id()), base64);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            String serialData = jedis.get(obj.id());
+            String serialData = jedis.get(expect.id());
             try {
                 return (SObject) serializer.deserialize(Base64.getDecoder().decode(serialData));
             } catch (Exception e) {
@@ -68,8 +68,8 @@ public class JedisWrapperTest extends JedisTestBase {
             }
             return null;
         });
-        assertThat(actual).isNotNull();
-        assertThat(actual.id()).isEqualTo(obj.id());
+
+        assertThat(actual).isEqualTo(expect);
     }
 
     @Test
