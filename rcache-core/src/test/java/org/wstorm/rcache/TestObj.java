@@ -23,8 +23,17 @@ public class TestObj implements RObject<String> {
 
     public TestObj() {
         // null object constructor
+        setId(null);
+        setSum(-999);
     }
 
+    public String getId() {
+        return id();
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     @Override
     public String id() {
@@ -46,7 +55,7 @@ public class TestObj implements RObject<String> {
 
         TestObj sObject = (TestObj) o;
 
-        return sum == sObject.sum && (id != null ? id.equals(sObject.id) : sObject.id == null);
+        return sum == sObject.sum && (getId() != null ? id.equals(sObject.id) : sObject.id == null);
 
     }
 
