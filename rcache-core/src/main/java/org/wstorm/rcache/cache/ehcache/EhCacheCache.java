@@ -1,6 +1,7 @@
 package org.wstorm.rcache.cache.ehcache;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import net.sf.ehcache.Ehcache;
 import net.sf.ehcache.Element;
 import net.sf.ehcache.event.CacheEventListener;
@@ -53,11 +54,20 @@ class EhCacheCache implements Cache, CacheEventListener {
         if (CollectionsUtils.isEmpty(ids)) return new HashMap<>();
 
         try {
-            return ids.stream().collect(Collectors.toMap(String::toString,
-                    id -> {
-                        Element element = cache.get(id);
-                        return (T) (element != null ? element.getObjectValue() : null);
-                    }));
+            List<String> cacheKeys;
+            
+            if (cacheConfig != null) cacheKeys = CacheUtils.genCacheKeys(cacheConfig, ids);
+            else cacheKeys = ids;
+
+            Map<Object, Element> elements = cache.getAll(cacheKeys);
+            Map<String, T> map = Maps.newHashMap();
+            for (int i = 0; i < cacheKeys.size(); i++) {
+                if (elements.get(cacheKeys.get(i)) != null) {
+                    map.put(ids.get(i), (T) elements.get(cacheKeys.get(i)).getObjectValue());
+                }
+            }
+
+            return map;
         } catch (Exception e) {
             throw new CacheException("getAll", e);
         }
@@ -67,6 +77,7 @@ class EhCacheCache implements Cache, CacheEventListener {
     public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
         if (id == null) return null;
         try {
+            if (cacheConfig != null) id = CacheUtils.genCacheKey(cacheConfig, id);
             Element element = cache.get(id);
 
             return (element != null) ? (T) element.getObjectValue() : null;
@@ -96,7 +107,7 @@ class EhCacheCache implements Cache, CacheEventListener {
 
         if (cacheConfig != null)
             elements.addAll(objectMap.entrySet().stream().map(entry -> {
-                Element element = new Element(entry.getKey(), entry.getValue());
+                Element element = new Element(CacheUtils.genCacheKey(cacheConfig, entry.getKey()), entry.getValue());
                 if (cacheConfig.expiredTime() > 0) {
                     element.setTimeToLive(cacheConfig.expiredTime());
                 }
