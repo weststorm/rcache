@@ -97,9 +97,10 @@ public class EhCacheProvider implements CacheProvider {
                     + " If this behaviour is required, consider using net.sf.ehcache.hibernate.SingletonEhCacheProvider.");
             return;
         }
-        URL xml = getClass().getClassLoader().getParent().getResource(cacheConfigFile);
+        URL xml = getClass().getClassLoader().getResource(cacheConfigFile);
 
         if (xml == null) xml = getClass().getResource(cacheConfigFile);
+        if (xml == null) xml = getClass().getClassLoader().getParent().getResource(cacheConfigFile);
         if (xml == null) throw new CacheException("cannot find ehcache.xml !!!");
 
         manager = new CacheManager(xml);
