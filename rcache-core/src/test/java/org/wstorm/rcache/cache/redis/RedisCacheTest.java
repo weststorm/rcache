@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.wstorm.rcache.TestObj;
+import org.wstorm.rcache.TestObjDatePicker;
 import org.wstorm.rcache.annotation.CacheConfig;
 import org.wstorm.rcache.cache.DataPicker;
 import org.wstorm.rcache.jedis.JedisTestBase;
@@ -26,22 +27,7 @@ public class RedisCacheTest extends JedisTestBase {
 
     private List<String> ids;
 
-    private final DataPicker<String, TestObj> dataPicker = new DataPicker<String, TestObj>() {
-
-        @Override
-        public TestObj pickup(String key) {
-
-            if (ids.contains(key)) {
-                return new TestObj(key, 100);
-            }
-            return null;
-        }
-
-        @Override
-        public TestObj makeEmptyData() {
-            return new TestObj();
-        }
-    };
+    private  DataPicker<String, TestObj> dataPicker;
 
     private CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
     private CacheConfig noExpiredCacheConfig = CacheUtils.getCacheAnnotation(null);
@@ -53,6 +39,7 @@ public class RedisCacheTest extends JedisTestBase {
         super.setUp();
         ids = Arrays.asList("9527", "9528", "9529");
         cache = new RedisCache(cacheConfig.region(), new JedisWrapper(pool));
+        dataPicker = new TestObjDatePicker(ids);
     }
 
     @After
