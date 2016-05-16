@@ -46,6 +46,7 @@ class EhCacheCache implements Cache, CacheEventListener {
         return this.cache.getKeys();
     }
 
+    @SuppressWarnings({"unchecked"})
     public <T extends RObject<String>> Map<String, T> getAll(CacheConfig cacheConfig, List<String> ids, DataPicker<String, T> dataPicker)
             throws CacheException {
 
@@ -53,35 +54,27 @@ class EhCacheCache implements Cache, CacheEventListener {
 
         try {
             return ids.stream().collect(Collectors.toMap(String::toString,
-                    id -> getBackOff(cacheConfig, CacheUtils.genCacheKey(cacheConfig, id), dataPicker)));
+                    id -> {
+                        Element element = cache.get(id);
+                        return (T) (element != null ? element.getObjectValue() : null);
+                    }));
         } catch (Exception e) {
             throw new CacheException("getAll", e);
         }
     }
 
-
+    @SuppressWarnings({"unchecked"})
     public <T extends RObject<String>> T get(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) throws CacheException {
         if (id == null) return null;
         try {
-            return getBackOff(cacheConfig, CacheUtils.genCacheKey(cacheConfig, id), dataPicker);
+            Element element = cache.get(id);
+
+            return (element != null) ? (T) element.getObjectValue() : null;
         } catch (net.sf.ehcache.CacheException e) {
             throw new CacheException("get", e);
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private <T extends RObject<String>> T getBackOff(CacheConfig cacheConfig, String id, DataPicker<String, T> dataPicker) {
-        Element element = cache.get(id);
-
-        if (element != null) return (T) element.getObjectValue();
-        else {
-            T t;
-            if ((t = dataPicker.pickup(id)) != null || (t = dataPicker.makeEmptyData()) != null)
-                put(cacheConfig, id, t);
-
-            return t;
-        }
-    }
 
     @Override
     public <T extends RObject<String>> void put(CacheConfig cacheConfig, String id, T value) throws CacheException {
