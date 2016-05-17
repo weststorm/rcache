@@ -90,6 +90,7 @@ public class EhCacheCacheTest {
 
 
     @Test
+    @SuppressWarnings({"unchecked"})
     public void evictAll() throws Exception {
         TestObj expect = new TestObj(ids.get(0), 200);
         cache.put(cacheConfig, ids.get(0), expect);
