@@ -81,7 +81,7 @@ class EhCacheCache implements Cache, CacheEventListener {
             Element element = cache.get(id);
 
             return (element != null) ? (T) element.getObjectValue() : null;
-        } catch (net.sf.ehcache.CacheException e) {
+        } catch (IllegalStateException | net.sf.ehcache.CacheException e) {
             throw new CacheException("get", e);
         }
     }

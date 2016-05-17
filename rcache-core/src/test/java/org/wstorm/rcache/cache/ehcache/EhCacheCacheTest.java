@@ -8,7 +8,7 @@ import org.wstorm.rcache.TestExpiredListener;
 import org.wstorm.rcache.TestObj;
 import org.wstorm.rcache.TestObjDatePicker;
 import org.wstorm.rcache.annotation.CacheConfig;
-import org.wstorm.rcache.cache.CacheExpiredListener;
+import org.wstorm.rcache.exception.CacheException;
 import org.wstorm.rcache.utils.CacheUtils;
 
 import java.util.Arrays;
@@ -58,13 +58,12 @@ public class EhCacheCacheTest {
     }
 
 
-    @Test
+    @Test(expected = CacheException.class)
     public void getPutAll() throws Exception {
         Map<String, TestObj> all = cache.getAll(cacheConfig, ids, null);
         assertThat(all).isEmpty();
         all = cache.getAll(cacheConfig, ids, datePicker); //ehcache有无数据返回与dataPicker无关
         assertThat(all).isEmpty();
-
 
         Map<String, TestObj> rs = ids.stream().collect(Collectors.toMap(
                 String::toString,
@@ -74,10 +73,30 @@ public class EhCacheCacheTest {
 
 
         all = cache.getAll(cacheConfig, ids, null);
-        assertThat(all.size()).isEqualTo(rs.size());
+        assertThat(all).isEqualTo(rs);
+
+        List<String> cacheKeys = CacheUtils.genCacheKeys(cacheConfig, ids);
+        rs = ids.stream().collect(Collectors.toMap(
+                id -> CacheUtils.genCacheKey(cacheConfig, id),
+                id -> datePicker.pickup(id)
+        ));
+        cache.putAll(null, rs);
+
+        all = cache.getAll(null, cacheKeys, null);
+        assertThat(all).isEqualTo(rs);
+
+
+        provider.stop(); //模拟异常
+        cache.putAll(cacheConfig, rs);
     }
 
-    @Test
+    @Test(expected = CacheException.class)
+    public void mockGetAllException() throws Exception {
+        provider.stop(); //模拟异常
+        cache.getAll(cacheConfig, ids, null);
+    }
+
+    @Test(expected = CacheException.class)
     public void getPut() throws Exception {
         TestObj expect = cache.get(cacheConfig, ids.get(0), null);
         assertThat(expect).isNull();
@@ -87,19 +106,31 @@ public class EhCacheCacheTest {
         cache.put(cacheConfig, ids.get(0), expect);
         TestObj actual = cache.get(cacheConfig, ids.get(0), null);
         assertThat(actual).isEqualTo(expect);
+
+        provider.stop(); //模拟异常
+        cache.put(cacheConfig, ids.get(0), expect);
     }
 
+    @Test(expected = CacheException.class)
+    public void mockGetException() throws Exception {
+        provider.stop(); //模拟异常
+        cache.get(cacheConfig, ids.get(0), datePicker);
+    }
 
-    @Test
+    @Test(expected = CacheException.class)
     @SuppressWarnings({"unchecked"})
     public void evictAll() throws Exception {
         TestObj expect = new TestObj(ids.get(0), 200);
         cache.put(cacheConfig, ids.get(0), expect);
+
         {
             TestObj actual = cache.get(cacheConfig, ids.get(0), null);
             assertThat(actual).isEqualTo(expect);
         }
+        
         cache.evict(cacheConfig, ids.get(0));
+        cache.evict(null, CacheUtils.genCacheKey(cacheConfig, ids.get(0)));
+
         {
             TestObj actual = cache.get(cacheConfig, ids.get(0), null);
             assertThat(actual).isNull();
@@ -110,9 +141,13 @@ public class EhCacheCacheTest {
                 id -> datePicker.pickup(id)
         ));
         cache.putAll(cacheConfig, rs);
-        cache.evict(cacheConfig, cache.keys());
+        cache.evict(cacheConfig, ids);
         Map<String, RObject<String>> all = cache.getAll(cacheConfig, ids, null);
         assertThat(all).isNullOrEmpty();
+
+
+        provider.stop(); //模拟异常
+        cache.evict(cacheConfig, ids);
     }
 
 
