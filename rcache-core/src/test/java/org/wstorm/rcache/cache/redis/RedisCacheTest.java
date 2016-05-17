@@ -46,6 +46,7 @@ public class RedisCacheTest extends JedisTestBase {
     public void tearDown() throws Exception {
         cache.evict(cacheConfig, ids);
         cache.evict(noExpiredCacheConfig, ids);
+        super.tearDown();
     }
 
     @Test
