@@ -4,6 +4,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.wstorm.rcache.RObject;
+import org.wstorm.rcache.TestExpiredListener;
 import org.wstorm.rcache.TestObj;
 import org.wstorm.rcache.TestObjDatePicker;
 import org.wstorm.rcache.annotation.CacheConfig;
@@ -27,7 +28,7 @@ public class EhCacheCacheTest {
     private EhCacheProvider provider = new EhCacheProvider();
     private EhCacheCache cache;
 
-    private TestListener listener = new TestListener();
+    private TestExpiredListener listener = new TestExpiredListener();
     private CacheConfig cacheConfig;
     private List<String> ids;
     private TestObjDatePicker datePicker;
@@ -120,13 +121,5 @@ public class EhCacheCacheTest {
         cache.clone();
     }
 
-
-    private class TestListener implements CacheExpiredListener {
-
-        @Override
-        public <ID> void notifyElementExpired(String region, ID key) {
-            System.out.println("region:" + region + ", ID=" + key);
-        }
-    }
 
 }

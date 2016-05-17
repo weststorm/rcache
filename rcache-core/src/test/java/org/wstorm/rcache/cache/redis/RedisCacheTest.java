@@ -5,14 +5,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.wstorm.rcache.TestObj;
 import org.wstorm.rcache.TestObjDatePicker;
-import org.wstorm.rcache.annotation.CacheConfig;
-import org.wstorm.rcache.cache.DataPicker;
-import org.wstorm.rcache.jedis.JedisTestBase;
 import org.wstorm.rcache.jedis.JedisWrapper;
-import org.wstorm.rcache.utils.CacheUtils;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -23,14 +18,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0
  * @created 2016年05月14日
  */
-public class RedisCacheTest extends JedisTestBase {
-
-    private List<String> ids;
-
-    private  DataPicker<String, TestObj> dataPicker;
-
-    private CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
-    private CacheConfig noExpiredCacheConfig = CacheUtils.getCacheAnnotation(null);
+public class RedisCacheTest extends RedisCacheProviderTest {
 
     private RedisCache cache;
 
@@ -38,6 +26,7 @@ public class RedisCacheTest extends JedisTestBase {
     public void setUp() throws Exception {
         super.setUp();
         ids = Arrays.asList("9527", "9528", "9529");
+        redisCacheProvider.buildCache(cacheConfig.region(), null);
         cache = new RedisCache(cacheConfig.region(), new JedisWrapper(pool));
         dataPicker = new TestObjDatePicker(ids);
     }
