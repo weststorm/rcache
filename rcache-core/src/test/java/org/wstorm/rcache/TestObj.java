@@ -9,7 +9,7 @@ import org.wstorm.rcache.annotation.CacheConfig;
  * @version 1.0
  * @created 2016年05月14日
  */
-@CacheConfig(region = "org.wstorm.rcache", keyPrefix = "testObj", expiredTime = 10)
+@CacheConfig(region = "udserv:usr", keyPrefix = "testObj", expiredTime = 10)
 public class TestObj implements RObject<String> {
 
     private String id;

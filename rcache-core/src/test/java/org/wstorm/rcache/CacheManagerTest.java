@@ -20,8 +20,8 @@ import static org.assertj.core.api.Assertions.assertThat;
  */
 public class CacheManagerTest extends RedisCacheTest {
 
-    private CacheManager cacheManager;
-    private TestExpiredListener listener = new TestExpiredListener();
+    protected CacheManager cacheManager;
+    protected TestExpiredListener listener = new TestExpiredListener();
 
     @Before
     public void setUp() throws Exception {
