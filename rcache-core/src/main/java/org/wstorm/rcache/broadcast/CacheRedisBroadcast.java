@@ -271,13 +271,16 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
             // 同一进程的消息忽略掉
             if (hostId.equalsIgnoreCase(cmd.getHostId())) {
                 if (log.isDebugEnabled())
-                    log.debug("ignore host hostId={} | current host hostId={}", cmd.getHostId(), hostId);
+                    log.debug("忽略同缓存管理器[{}]的消息", hostId);
                 return;
             }
+
+            if (log.isDebugEnabled())
+                log.debug("当前缓存管理器[{}]收到缓存管理器[{}]发来[{}]消息，清除region[{}]key[{}] ", hostId, cmd.getHostId(),
+                        new String(channel), cmd.getRegion(), cmd.getKey());
+
             switch (cmd.getOperator()) {
                 case Command.OPT_DELETE_KEY:
-                    if (log.isDebugEnabled())
-                        log.debug("收到[{}]消息，清除region[{}]key[{}] ", new String(channel), cmd.getRegion(), cmd.getKey());
                     onDeleteCacheKey(cmd.getRegion(), cmd.getKey());
                     break;
                 default:
