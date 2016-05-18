@@ -37,8 +37,8 @@ import java.util.stream.Stream;
  */
 public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpiredListener {
 
-    private final static byte LEVEL_1 = 1;
-    private final static byte LEVEL_2 = 2;
+    public final static byte LEVEL_1 = 1;
+    public final static byte LEVEL_2 = 2;
     private final KryoPoolSerializer serializer = new KryoPoolSerializer();
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final String hostId;
@@ -265,7 +265,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     public void onMessage(byte[] channel, byte[] message) {
 
         try {
-            Command cmd = (Command) serializer.deserialize(message);
+            Command cmd = serializer.deserialize(message);
             if (cmd == null)
                 return;
             // 同一进程的消息忽略掉
@@ -292,9 +292,9 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      * 关闭到通道的连接
      */
     public void close() {
+        CacheRedisBroadcast.this.punsubscribe();
         cacheManager.shutdown(LEVEL_1);
         cacheManager.shutdown(LEVEL_2);
-        CacheRedisBroadcast.this.punsubscribe();
     }
 
 

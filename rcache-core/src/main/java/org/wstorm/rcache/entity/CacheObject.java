@@ -1,8 +1,6 @@
 package org.wstorm.rcache.entity;
 
 
-import org.wstorm.rcache.RObject;
-
 import java.io.Serializable;
 
 
@@ -10,11 +8,9 @@ import java.io.Serializable;
  * 所获取的缓存对象
  *
  * @param <T> 缓存对象类型
- *
  * @author sunyp
  * @version 1.0
  * @created 2016年05月06日
- *
  */
 public class CacheObject<T> implements Serializable {
 
