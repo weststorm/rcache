@@ -67,7 +67,7 @@ public class RedisCacheProvider implements CacheProvider {
      * implementation during SessionFactory.close().
      */
     public void stop() {
-        log.warn("memcached停止由容器管理,不由缓存提供者管理!");
+        log.warn("redisCache停止由容器管理,不由缓存提供者管理!");
     }
 
 

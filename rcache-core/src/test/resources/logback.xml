@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%date{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n
+            </pattern>
+        </encoder>
+    </appender>
+
+    <logger name="org.apache.zookeeper.ClientCnxn" level="WARN"/>
+    <logger name="org.dozer" level="WARN"/>
+    <logger name="org.apache.commons" level="WARN"/>
+    <logger name="org.springframework.beans.factory" level="WARN"/>
+    <logger name="org.springframework.context.annotation" level="WARN"/>
+    <logger name="org.springframework.core.io" level="WARN"/>
+    <logger name="org.springframework.context.support" level="WARN"/>
+    <logger name="org.springframework.env" level="WARN"/>
+    <logger name="org.springframework.core" level="WARN"/>
+    <logger name="org.springframework.aop" level="WARN"/>
+    <logger name="org.hibernate" level="WARN"/>
+    <logger name="org.elasticsearch" level="INFO"/>
+
+    <!--log4jdbc -->
+    <logger name="jdbc.sqltiming" level="INFO"/>
+
+    <logger name="com.alibaba.dubbo" level="WARN"/>
+
+    <logger name="org.springframework" level="WARN"/>
+    <logger name="net.sf" level="WARN"/>
+
+    <logger name="org.hibernate" level="WARN"/>
+
+    <root level="DEBUG">
+        <appender-ref ref="console"/>
+    </root>
+</configuration>

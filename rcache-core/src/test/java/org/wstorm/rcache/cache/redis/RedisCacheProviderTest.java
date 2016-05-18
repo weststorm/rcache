@@ -3,15 +3,9 @@ package org.wstorm.rcache.cache.redis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.wstorm.rcache.TestObj;
-import org.wstorm.rcache.annotation.CacheConfig;
-import org.wstorm.rcache.cache.DataPicker;
+import org.wstorm.rcache.TestBase;
 import org.wstorm.rcache.enums.CacheProviderType;
-import org.wstorm.rcache.jedis.JedisTestBase;
 import org.wstorm.rcache.jedis.JedisWrapper;
-import org.wstorm.rcache.utils.CacheUtils;
-
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -20,25 +14,14 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0
  * @created 2016年05月15日
  */
-public class RedisCacheProviderTest extends JedisTestBase {
+public class RedisCacheProviderTest extends TestBase {
 
-    protected RedisCacheProvider redisCacheProvider;
-
-    protected List<String> ids;
-
-    protected DataPicker<String, TestObj> dataPicker;
-
-    protected CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
-    protected CacheConfig noExpiredCacheConfig = CacheUtils.getCacheAnnotation(null);
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        redisCacheProvider = new RedisCacheProvider(new JedisWrapper(pool));
-        redisCacheProvider.start(null);
+        init();
     }
 
-    @Override
     @After
     public void tearDown() throws Exception {
         redisCacheProvider.stop();

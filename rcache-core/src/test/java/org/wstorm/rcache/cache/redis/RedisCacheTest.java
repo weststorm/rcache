@@ -3,11 +3,9 @@ package org.wstorm.rcache.cache.redis;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.wstorm.rcache.TestBase;
 import org.wstorm.rcache.TestObj;
-import org.wstorm.rcache.TestObjDatePicker;
-import org.wstorm.rcache.jedis.JedisWrapper;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -18,17 +16,12 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0
  * @created 2016年05月14日
  */
-public class RedisCacheTest extends RedisCacheProviderTest {
+public class RedisCacheTest extends TestBase {
 
-    private RedisCache cache;
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
-        ids = Arrays.asList("9527", "9528", "9529");
-        redisCacheProvider.buildCache(cacheConfig.region(), null);
-        cache = new RedisCache(cacheConfig.region(), new JedisWrapper(pool));
-        dataPicker = new TestObjDatePicker(ids);
+        init();
     }
 
     @After

@@ -3,7 +3,7 @@ package org.wstorm.rcache;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.wstorm.rcache.cache.redis.RedisCacheTest;
+import org.wstorm.rcache.broadcast.CacheRedisBroadcast;
 import org.wstorm.rcache.enums.CacheProviderType;
 
 import java.util.Arrays;
@@ -18,14 +18,13 @@ import static org.assertj.core.api.Assertions.assertThat;
  * @version 1.0
  * @created 2016年05月17日
  */
-public class CacheManagerTest extends RedisCacheTest {
+public class CacheManagerTest extends TestBase {
 
-    protected CacheManager cacheManager;
-    protected TestExpiredListener listener = new TestExpiredListener();
+    private CacheManager cacheManager;
 
     @Before
     public void setUp() throws Exception {
-        super.setUp();
+        init();
         ids = Arrays.asList("9527", "9528", "9529");
         dataPicker = new TestObjDatePicker(ids);
         cacheManager = new CacheManager(redisCacheProvider, CacheProviderType.ehcache.name(), "ehcache.xml");
@@ -33,6 +32,7 @@ public class CacheManagerTest extends RedisCacheTest {
 
     @After
     public void tearDown() throws Exception {
+        cacheManager.batchEvict(CacheRedisBroadcast.LEVEL_2,cacheConfig,null, ids, listener);
         cacheManager.shutdown(2);
         cacheManager.shutdown(1);
         super.tearDown();
