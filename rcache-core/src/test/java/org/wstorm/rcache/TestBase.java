@@ -1,15 +1,14 @@
 package org.wstorm.rcache;
 
+import com.google.common.collect.Lists;
 import org.wstorm.rcache.annotation.CacheConfig;
 import org.wstorm.rcache.cache.DataPicker;
 import org.wstorm.rcache.cache.redis.RedisCache;
 import org.wstorm.rcache.cache.redis.RedisCacheProvider;
-import org.wstorm.rcache.enums.CacheProviderType;
 import org.wstorm.rcache.jedis.JedisTestBase;
 import org.wstorm.rcache.jedis.JedisWrapper;
 import org.wstorm.rcache.utils.CacheUtils;
 
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -17,7 +16,7 @@ import java.util.List;
  * @version 1.0
  * @created 2016年05月18日
  */
-public abstract  class TestBase extends JedisTestBase {
+public abstract class TestBase extends JedisTestBase {
 
     protected List<String> ids;
 
@@ -26,7 +25,7 @@ public abstract  class TestBase extends JedisTestBase {
     protected CacheConfig cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
     protected CacheConfig noExpiredCacheConfig = CacheUtils.getCacheAnnotation(null);
 
-    protected TestExpiredListener listener = new TestExpiredListener();
+    TestExpiredListener listener = new TestExpiredListener();
 
 
     protected RedisCacheProvider redisCacheProvider;
@@ -35,11 +34,12 @@ public abstract  class TestBase extends JedisTestBase {
 
     protected void init() throws Exception {
         super.setUp();
-        ids = Arrays.asList("9527", "9528", "9529");
+//        ids = Arrays.asList("9527", "9528", "9529"); // Kryo 反序列化会出现,禁止使用
+        ids = Lists.newArrayList("9527", "9528", "9529");
         dataPicker = new TestObjDatePicker(ids);
         redisCacheProvider = new RedisCacheProvider(new JedisWrapper(pool));
         redisCacheProvider.start(null);
-        cache  = redisCacheProvider.buildCache(cacheConfig.region(), listener);
+        cache = redisCacheProvider.buildCache(cacheConfig.region(), listener);
     }
 
 

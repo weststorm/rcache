@@ -11,11 +11,11 @@
 		timeToIdleSeconds="0" timeToLiveSeconds="60" overflowToDisk="false">
 	</defaultCache>
 
-	<cache name="udserv:app" maxElementsInMemory="2" eternal="false"
+	<cache name="udserv:app" maxElementsInMemory="3" eternal="false"
 		timeToIdleSeconds="0" timeToLiveSeconds="60" overflowToDisk="false"
 		diskPersistent="false">
 	</cache>
-	<cache name="udserv:usr" maxElementsInMemory="1" eternal="false"
+	<cache name="udserv:usr" maxElementsInMemory="3" eternal="false"
 		timeToIdleSeconds="0" timeToLiveSeconds="60" overflowToDisk="false"
 		diskPersistent="false">
 	</cache>

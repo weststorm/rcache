@@ -1,5 +1,7 @@
 package org.wstorm.rcache.cache.ehcache;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,7 +39,8 @@ public class EhCacheCacheTest {
     public void setUp() throws Exception {
         provider.start("ehcache.xml");
         cache = provider.buildCache("test", listener);
-        ids = Arrays.asList("9527", "9528", "9529");
+//        ids = Arrays.asList("9527", "9528", "9529"); // Kryo 反序列化会出现,禁止使用
+        ids = Lists.newArrayList("9527", "9528,", "9529");
         cacheConfig = CacheUtils.getCacheAnnotation(TestObj.class);
         datePicker = new TestObjDatePicker(ids);
     }

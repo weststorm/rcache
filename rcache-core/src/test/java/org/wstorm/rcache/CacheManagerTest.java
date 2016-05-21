@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.wstorm.rcache.broadcast.CacheRedisBroadcast;
 import org.wstorm.rcache.enums.CacheProviderType;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -25,14 +24,13 @@ public class CacheManagerTest extends TestBase {
     @Before
     public void setUp() throws Exception {
         init();
-        ids = Arrays.asList("9527", "9528", "9529");
         dataPicker = new TestObjDatePicker(ids);
         cacheManager = new CacheManager(redisCacheProvider, CacheProviderType.ehcache.name(), "ehcache.xml");
     }
 
     @After
     public void tearDown() throws Exception {
-        cacheManager.batchEvict(CacheRedisBroadcast.LEVEL_2,cacheConfig,null, ids, listener);
+        cacheManager.batchEvict(CacheRedisBroadcast.LEVEL_2, cacheConfig, null, ids, listener);
         cacheManager.shutdown(2);
         cacheManager.shutdown(1);
         super.tearDown();
