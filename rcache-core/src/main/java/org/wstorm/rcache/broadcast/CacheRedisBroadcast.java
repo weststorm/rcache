@@ -92,7 +92,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     @Override
     public void notifyElementExpired(String region, Object key) {
 
-        if (log.isDebugEnabled()) log.debug("Cache data expired| region={}| key={}", region, key);
+        if (log.isDebugEnabled()) log.debug("Cache data expired| hostId={}| region={}| key={}", hostId, region, key);
 
         // 删除二级缓存
         if (key instanceof List) cacheManager.batchEvict(LEVEL_2, null, region, (List<String>) key, this);
@@ -110,6 +110,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
      */
     private void _publishEvictCmd(String region, Object key) {
         // 发送广播
+        if (log.isDebugEnabled()) log.debug("_publishEvictCmd| hostId={}| region=={}| key={}", hostId, region, key);
         Command cmd = new Command(hostId, Command.OPT_DELETE_KEY, region, key);
         try {
             pubSuber.publish(region, serializer.serialize(cmd));
@@ -220,7 +221,8 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
     public void batchEvict(CacheConfig cacheConfig, String region, List<String> ids) {
         cacheManager.batchEvict(LEVEL_1, cacheConfig, region, ids, this);
         cacheManager.batchEvict(LEVEL_2, cacheConfig, region, ids, this);
-        _publishEvictCmd(region, ids);
+        if (cacheConfig != null) _publishEvictCmd(region, CacheUtils.genCacheKeys(cacheConfig, ids));
+        else _publishEvictCmd(region, ids);
     }
 
     /**
@@ -251,7 +253,7 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
             cacheManager.evict(LEVEL_1, null, region, String.valueOf(key), this);
         }
         if (log.isDebugEnabled()) {
-            log.debug("Received cache evict message| region={}| key={}", region, key);
+            log.debug("Received cache evict message| hostId={}| region={}| key={}", hostId, region, key);
         }
     }
 
@@ -271,23 +273,23 @@ public class CacheRedisBroadcast extends BinaryJedisPubSub implements CacheExpir
             // 同一进程的消息忽略掉
             if (hostId.equalsIgnoreCase(cmd.getHostId())) {
                 if (log.isDebugEnabled())
-                    log.debug("忽略同缓存管理器[{}]的消息", hostId);
+                    log.debug("onMessage| 忽略同缓存管理器[{}]的消息", hostId);
                 return;
             }
 
             if (log.isDebugEnabled())
-                log.debug("当前缓存管理器[{}]收到缓存管理器[{}]发来[{}]消息，清除region[{}]key[{}] ", hostId, cmd.getHostId(),
-                        new String(channel), cmd.getRegion(), cmd.getKey());
+                log.debug("onMessage| 当前缓存管理器[{}]收到缓存管理器[{}]发来[{}]消息，清除region[{}]key[{}] ",
+                        hostId, cmd.getHostId(), new String(channel), cmd.getRegion(), cmd.getKey());
 
             switch (cmd.getOperator()) {
                 case Command.OPT_DELETE_KEY:
                     onDeleteCacheKey(cmd.getRegion(), cmd.getKey());
                     break;
                 default:
-                    log.warn("Unknown message type = {}", cmd.getOperator());
+                    log.warn("onMessage| hostId={}| Unknown message type={}", hostId, cmd.getOperator());
             }
         } catch (Exception e) {
-            log.error("Unable to handle received msg", e);
+            log.error("onMessage| hostId={}| channel={}", hostId, new String(channel), e);
         }
     }
 

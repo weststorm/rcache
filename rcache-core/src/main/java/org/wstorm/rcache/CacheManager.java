@@ -130,7 +130,7 @@ public class CacheManager {
                 } catch (Exception e) {
                     log.warn("setAll {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
-                        log.error("get", e);
+                        log.error("setAll", e);
                     }
                 }
         }
@@ -145,7 +145,7 @@ public class CacheManager {
                 } catch (Exception e) {
                     log.warn("set {} exception: {}", e.getClass(), e.getLocalizedMessage());
                     if (log.isDebugEnabled()) {
-                        log.error("get", e);
+                        log.error("set", e);
                     }
                 }
         }

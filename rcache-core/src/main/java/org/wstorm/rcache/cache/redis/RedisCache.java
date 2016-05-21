@@ -62,8 +62,10 @@ public class RedisCache implements Cache {
             Map<String, T> result = Maps.newHashMapWithExpectedSize(responseMap.size());
             responseMap.forEach((id, responseEntry) -> {
                 T t = getBackOff(id, dataPicker, responseEntry.get());
-                if (t != null) backOff.put(id, t);
-                result.put(id, t);
+                if (t != null) {
+                    backOff.put(id, t);
+                    result.put(id, t);
+                }
             });
             return result;
         } finally {
