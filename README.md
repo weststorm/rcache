@@ -6,4 +6,3 @@
 JDK1.8 为了用更好的JDK,所以直接上8了.
 Memcached 1.x.x
 Redis 2.7+
-.
