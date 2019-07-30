@@ -6,7 +6,7 @@ rcache-core/*.iml
 .idea/*
 
 target/*
-
+build/*
 rcache-core/target
 
 rcache-utils/target
