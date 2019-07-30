@@ -4,7 +4,7 @@
 rcache-core/*.iml
 
 .idea/*
-
+.project/*
 target/*
 
 rcache-core/target
