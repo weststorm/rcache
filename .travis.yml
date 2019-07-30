@@ -1,1 +1,4 @@
-script: echo "hello"
+script: 
+ - echo "start"
+ - echo "hello"
+ - echo "end"
