@@ -1,4 +1,0 @@
-script: 
-  - echo "hello world"
-  - echo "world" && cat .gitignore && echo "hello"
-  - echo "end"
