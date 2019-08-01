@@ -3,3 +3,4 @@ env:
   - ISOLATED=false
 script: 
   - echo "ISOLATED=$ISOLATED"
+  - exit 3
