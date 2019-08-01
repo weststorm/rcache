@@ -1,4 +1,6 @@
 env:
   - ISOLATED=true
   - ISOLATED=false
-script: cat .gitignore
+script: 
+  - cat .gitignore
+  - echo "ISOLATED=$ISOLATED"
