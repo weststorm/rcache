@@ -1,1 +1,4 @@
+env:
+  - ISOLATED=true
+  - ISOLATED=false
 script: cat .gitignore
